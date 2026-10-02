@@ -3,147 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavya Family Restaurant | Premium Ordering</title>
+    <title>Kavya VIP | Premium Restaurant</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts: Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <!-- Splash Screen -->
-    <div id="splash-screen" class="glass-splash">
+    <div id="splash-screen">
         <div class="splash-content">
-            <!-- Replace with actual logo later -->
             <h1 class="brand-title">KAVYA</h1>
             <p class="brand-subtitle">FAMILY RESTAURANT</p>
         </div>
-        <div class="powered-by-splash">Powered by Legend</div>
+        <div class="powered-by-splash">Powered by <span class="legend-text">LEGEND</span></div>
     </div>
 
-    <!-- Sticky Header & Search -->
+    <!-- Sticky Header -->
     <header class="glass-header">
-        <div class="location-bar">
-            <i class="fa-solid fa-location-dot text-neon"></i>
-            <span id="user-location">Detecting Location...</span>
-            <i class="fa-solid fa-chevron-down"></i>
+        <div class="location-bar" id="location-bar">
+            <i class="fa-solid fa-location-crosshairs text-neon"></i>
+            <span id="user-location">Detecting VIP Location...</span>
         </div>
-        
         <div class="search-bar glass-panel">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" placeholder="Search 'Biryani', 'Sweets'...">
+            <input type="text" placeholder="Search 'Biryani', 'Rolls'...">
             <div class="mic-icon"><i class="fa-solid fa-microphone"></i></div>
         </div>
     </header>
 
-    <!-- Carousel Banners (Offers) -->
-    <div class="offer-carousel">
-        <div class="offer-card glass-panel" style="background: linear-gradient(135deg, rgba(226, 55, 68, 0.2), rgba(0,0,0,0));">
+    <!-- Animated Banners -->
+    <div class="offer-carousel" id="offer-scroll">
+        <div class="offer-card banner-1 shimmer-effect">
             <h3>Flat 20% OFF</h3>
             <p>On your first premium order.</p>
         </div>
-        <!-- Add more cards for auto-scroll via JS later -->
+        <div class="offer-card banner-2 shimmer-effect">
+            <h3>Kavya Coins</h3>
+            <p>Earn 10% cashback on every meal.</p>
+        </div>
+        <div class="offer-card banner-3 shimmer-effect">
+            <h3>Free Delivery</h3>
+            <p>On VIP orders above ₹499.</p>
+        </div>
     </div>
 
     <!-- Horizontal Categories -->
     <div class="category-scroll">
         <div class="category-item active">
-            <div class="cat-icon glass-panel"><i class="fa-solid fa-utensils"></i></div>
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80" alt="All"></div>
             <span>All</span>
         </div>
         <div class="category-item">
-            <div class="cat-icon glass-panel"><i class="fa-solid fa-fire"></i></div>
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&q=80" alt="Biryani"></div>
             <span>Biryani</span>
         </div>
         <div class="category-item">
-            <div class="cat-icon glass-panel"><i class="fa-solid fa-bowl-food"></i></div>
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1549110781-79b88f343f7a?w=200&q=80" alt="Rolls"></div>
+            <span>Rolls</span>
+        </div>
+        <div class="category-item">
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1628294895950-9805252327bc?w=200&q=80" alt="Starters"></div>
+            <span>Starters</span>
+        </div>
+        <div class="category-item">
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1606622834710-54a86477e682?w=200&q=80" alt="Chicken"></div>
+            <span>Chicken</span>
+        </div>
+        <div class="category-item">
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=200&q=80" alt="Curries"></div>
             <span>Curries</span>
         </div>
         <div class="category-item">
-            <div class="cat-icon glass-panel"><i class="fa-solid fa-ice-cream"></i></div>
+            <div class="cat-icon"><img src="https://images.unsplash.com/photo-1596450514735-3b9ffef74c43?w=200&q=80" alt="Sweets"></div>
             <span>Sweets</span>
         </div>
     </div>
 
-        <!-- Full-Width Menu Cards -->
-    <main class="menu-container" id="menu-items">
-        <!-- Javascript will inject everything here automatically now -->
-    </main>
+    <!-- Menu Cards Container -->
+    <main class="menu-container" id="menu-items"></main>
 
-    <main class="menu-container" id="menu-items">
-        
-        <!-- Premium Item 1 -->
-        <div class="premium-food-card glass-panel">
-            <div class="food-image-wrapper">
-                <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80" alt="Biryani">
-                <div class="badge discount-badge">33% OFF</div>
-            </div>
-            <div class="food-info">
-                <div class="food-header">
-                    <div>
-                        <div class="veg-nonveg non-veg"></div>
-                        <h3 class="food-title">Special Chicken Biryani</h3>
-                        <p class="food-rating">⭐⭐⭐⭐⭐ <span class="rating-count">(4.8)</span></p>
-                    </div>
-                    <div class="add-wrapper" id="add-wrapper-Biryani">
-                        <button class="glass-btn add-btn">ADD</button>
-                    </div>
-                </div>
-                <div class="food-price">₹299 <span class="old-price">₹450</span></div>
-                <p class="food-desc">Served with Raita & spicy Salan. Premium long-grain Basmati Rice cooked to perfection.</p>
-            </div>
+    <!-- VIP FOOTER (Instagram & Legend Branding) -->
+    <div class="vip-footer">
+        <a href="https://instagram.com/kavyarestaurant" target="_blank" class="insta-btn">
+            <i class="fa-brands fa-instagram"></i> Follow on Instagram
+        </a>
+        <div class="powered-by-footer">
+            POWERED BY <span class="legend-text">LEGEND</span>
         </div>
+    </div>
 
-        <!-- Premium Item 2 -->
-        <div class="premium-food-card glass-panel">
-            <div class="food-image-wrapper">
-                <img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=600&q=80" alt="Paneer">
-                <div class="badge bestseller-badge">Bestseller</div>
-            </div>
-            <div class="food-info">
-                <div class="food-header">
-                    <div>
-                        <div class="veg-nonveg veg"></div>
-                        <h3 class="food-title">Paneer Butter Masala</h3>
-                        <p class="food-rating">⭐⭐⭐⭐½ <span class="rating-count">(4.5)</span></p>
-                    </div>
-                    <div class="add-wrapper" id="add-wrapper-Paneer">
-                        <button class="glass-btn add-btn">ADD</button>
-                    </div>
-                </div>
-                <div class="food-price">₹249 <span class="old-price">₹350</span></div>
-                <p class="food-desc">Rich, creamy tomato gravy with soft malai paneer cubes. A Kavya specialty.</p>
-            </div>
-        </div>
-        <!-- We will inject the rest of the 9 items dynamically via app.js in Phase 2 -->
-    </main>
-
-    <!-- Bottom Navigation Taskbar (Frosted Glass) -->
+    <!-- Bottom Taskbar -->
     <nav class="bottom-taskbar glass-panel">
-        <div class="nav-item active">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item">
-            <i class="fa-solid fa-bell-concierge"></i>
-            <span>Dining</span>
-        </div>
-        <div class="nav-item">
-            <i class="fa-solid fa-coins" style="color: #FFD700;"></i>
-            <span>Coins</span>
-        </div>
-        <div class="nav-item cart-nav">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>Cart</span>
-            <!-- Cart Badge -->
+        <div class="nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item" onclick="openLoginSheet()"><i class="fa-regular fa-circle-user"></i><span id="nav-profile-text">Login</span></div>
+        <div class="nav-item"><i class="fa-solid fa-coins text-gold"></i><span>Coins</span></div>
+        <div class="nav-item cart-nav" onclick="toggleCartSheet()">
+            <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
             <div class="cart-badge hidden" id="nav-cart-count">0</div>
         </div>
     </nav>
 
+    <!-- Login Bottom Sheet -->
+    <div id="login-sheet" class="glass-bottom-sheet">
+        <div class="sheet-header">
+            <h3><i class="fa-solid fa-crown text-gold"></i> VIP Login</h3>
+            <i class="fa-solid fa-circle-xmark close-sheet" onclick="closeLoginSheet()"></i>
+        </div>
+        <p style="color: var(--text-muted); font-size:12px; margin-bottom: 20px;">Required for live order tracking and Kavya Coins.</p>
+        <input type="text" id="user-name" class="custom-input" placeholder="Enter Full Name">
+        <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile Number" maxlength="10">
+        <button class="glass-btn full-width" onclick="saveUserLogin()">Continue Securely</button>
+    </div>
+
+    <!-- Checkout Bottom Sheet -->
+    <div id="checkout-sheet" class="glass-bottom-sheet">
+        <div class="sheet-header">
+            <h3><i class="fa-solid fa-receipt text-neon"></i> Order Summary</h3>
+            <i class="fa-solid fa-circle-xmark close-sheet" onclick="toggleCartSheet()"></i>
+        </div>
+        <div id="cart-items-container" class="cart-scroll-area"></div>
+        <div class="bill-details">
+            <div class="bill-row"><span>Item Total</span><span class="text-neon" id="bill-total">₹0</span></div>
+            <button class="glass-btn full-width" onclick="processCheckout()">Pay via UPI <i class="fa-solid fa-bolt"></i></button>
+        </div>
+    </div>
+
+    <div id="sheet-overlay" class="hidden" onclick="closeAllSheets()"></div>
     <script src="app.js"></script>
 </body>
 </html>
+
 
 
 
