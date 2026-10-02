@@ -1,193 +1,132 @@
 /* =========================================
-   KAVYA LEGEND TIER - THEME 2.0 (MATTE BLACK & NEON)
+   KAVYA MAX TIER - MIDNIGHT GLASSMORPHISM
    ========================================= */
+
+:root {
+    --bg-dark: #0a0b10;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-main: #ffffff;
+    --text-muted: #8b8d97;
+    --accent-red: #E23744;
+    --accent-neon: #00E5FF;
+    --veg-green: #25D366;
+}
 
 body {
     margin: 0; padding: 0;
-    background-color: #080808;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif;
     overflow-x: hidden;
-    padding-bottom: 90px;
+    padding-bottom: 100px; /* Space for bottom taskbar */
 }
 
-/* Loader */
-#loading-screen {
+/* Base Glassmorphism Class */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+}
+
+.text-neon { color: var(--accent-neon); }
+
+/* --- Splash Screen --- */
+#splash-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #050505; z-index: 9999;
-    display: flex; justify-content: center; align-items: center; text-align: center;
-    transition: opacity 0.5s;
+    background: var(--bg-dark); z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 0.8s ease;
 }
-.loader-line {
-    width: 100px; height: 3px; background: #222; margin: 15px auto;
-    position: relative; overflow: hidden; border-radius: 2px;
-}
-.loader-line::after {
-    content: ''; position: absolute; left: -50px; width: 50px; height: 100%;
-    background: #00E5FF; animation: loading 1.5s infinite linear;
-}
-@keyframes loading { 100% { left: 100px; } }
+.splash-content { text-align: center; }
+.brand-title { font-size: 42px; font-weight: 800; letter-spacing: 2px; margin: 0; background: linear-gradient(90deg, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+.brand-subtitle { font-size: 14px; letter-spacing: 4px; color: var(--accent-neon); margin-top: 5px;}
+.powered-by-splash { position: absolute; bottom: 30px; font-size: 12px; color: var(--text-muted); letter-spacing: 1px;}
 
-/* Header */
-.header {
-    background: #0a0a0a; padding: 15px 20px;
-    border-bottom: 1px solid #1a1a1a;
-    position: sticky; top: 0; z-index: 100;
+/* --- Sticky Header --- */
+.glass-header {
+    position: sticky; top: 0; z-index: 1000;
+    padding: 15px 20px;
+    background: rgba(10, 11, 16, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
 }
-.header-top { display: flex; justify-content: space-between; align-items: center; }
-.brand-name { margin: 0; font-size: 20px; color: #fff; letter-spacing: 1.5px; }
-.tagline { color: #888; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;}
+.location-bar { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 15px;}
+.search-bar { display: flex; align-items: center; padding: 12px 15px; border-radius: 12px; }
+.search-bar input { flex-grow: 1; background: transparent; border: none; color: white; font-family: 'Poppins'; font-size: 14px; margin-left: 10px; outline: none;}
+.search-bar input::placeholder { color: var(--text-muted); }
+.mic-icon { color: var(--accent-red); border-left: 1px solid var(--glass-border); padding-left: 10px; cursor: pointer;}
 
-/* Legend Tokens & Button */
-#login-btn {
-    background: rgba(0, 229, 255, 0.1); border: 1px solid #00E5FF; color: #00E5FF;
-    padding: 6px 14px; border-radius: 20px; font-weight: 600; cursor: pointer;
-}
-#token-display {
-    background: #111; padding: 5px 12px; border-radius: 20px;
-    border: 1px solid #333; cursor: pointer; display: flex; align-items: center; gap: 6px;
-    box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
-}
-.legend-diamond { color: #00E5FF; font-size: 14px; }
-#token-count { font-weight: bold; color: #fff; font-size: 15px;}
-#dynamic-greeting { background: #111; color: #00E5FF; font-size: 12px; text-align: center; padding: 5px; font-weight: bold;}
+/* --- Carousel & Categories --- */
+.offer-carousel { padding: 0 20px; margin-top: 20px; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;}
+.offer-carousel::-webkit-scrollbar { display: none; }
+.offer-card { min-width: 280px; padding: 20px; margin-right: 15px; scroll-snap-align: start; }
+.offer-card h3 { margin: 0 0 5px 0; font-size: 22px;}
+.offer-card p { margin: 0; font-size: 13px; color: var(--text-muted);}
 
-/* Time Banner */
-#time-greeting-banner {
-    background: #151515; padding: 12px 20px; text-align: center;
-    border-bottom: 1px solid #222;
+.category-scroll {
+    display: flex; gap: 20px; padding: 25px 20px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
 }
-#time-text { margin: 0; font-size: 14px; font-weight: 500; color: #ccc;}
+.category-scroll::-webkit-scrollbar { display: none; }
+.category-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; min-width: 60px;}
+.cat-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; transition: 0.3s;}
+.category-item.active .cat-icon { background: var(--text-main); color: var(--bg-dark); }
+.category-item span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.category-item.active span { color: var(--text-main); }
 
-/* Menu Cards (Premium Zomato Look) */
-.menu-container { padding: 15px; max-width: 600px; margin: 0 auto; }
-.food-card {
-    background: #111; margin-bottom: 20px; padding: 15px;
-    border-radius: 16px; display: flex; justify-content: space-between;
-    border: 1px solid #1c1c1c; position: relative;
-}
-.veg-nonveg { width: 10px; height: 10px; border: 1px solid; border-radius: 2px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center;}
+/* --- Full Width Menu Cards --- */
+.menu-container { padding: 0 20px; max-width: 600px; margin: 0 auto; }
+.premium-food-card { margin-bottom: 25px; overflow: hidden; padding: 0; border-radius: 20px;}
+.food-image-wrapper { position: relative; width: 100%; height: 220px; }
+.food-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+.badge { position: absolute; top: 15px; left: 15px; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 15px rgba(0,0,0,0.5);}
+.discount-badge { background: var(--accent-neon); color: #000; }
+.bestseller-badge { background: #FFD700; color: #000; }
+
+.food-info { padding: 20px; }
+.food-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;}
+.food-title { margin: 0; font-size: 18px; font-weight: 600;}
+.food-rating { margin: 5px 0 0 0; font-size: 12px; color: #FFD700;}
+.rating-count { color: var(--text-muted); }
+
+.veg-nonveg { width: 12px; height: 12px; border: 1px solid; border-radius: 3px; margin-bottom: 8px; display: flex; justify-content: center; align-items: center;}
 .veg-nonveg::after { content: ''; width: 6px; height: 6px; border-radius: 50%; }
-.veg { border-color: #25D366; } .veg::after { background: #25D366; }
-.non-veg { border-color: #E23744; } .non-veg::after { background: #E23744; }
+.veg { border-color: var(--veg-green); } .veg::after { background: var(--veg-green); }
+.non-veg { border-color: var(--accent-red); } .non-veg::after { background: var(--accent-red); }
 
-.food-details { width: 55%; }
-.food-details h3 { margin: 0 0 5px 0; font-size: 17px; color: #fff; }
-.price { font-size: 16px; font-weight: bold; color: #fff; }
-.old-price { text-decoration: line-through; color: #666; font-size: 12px; margin-left: 5px; }
-.rating { color: #FFD700; font-size: 11px; margin: 6px 0; }
-.desc { font-size: 12px; color: #888; margin-bottom: 25px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.food-price { font-size: 18px; font-weight: 800; margin-bottom: 8px;}
+.old-price { font-size: 13px; color: var(--text-muted); text-decoration: line-through; font-weight: 400; margin-left: 5px;}
+.food-desc { margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.5;}
 
-.food-img-container { width: 40%; position: relative; display: flex; align-items: flex-end; justify-content: flex-end;}
-.food-img { width: 100%; height: 120px; border-radius: 12px; object-fit: cover; }
-.discount-badge {
-    position: absolute; top: -5px; right: -5px;
-    background: #00E5FF; color: #000;
-    padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 900;
+.glass-btn {
+    background: rgba(226, 55, 68, 0.15); border: 1px solid rgba(226, 55, 68, 0.3);
+    color: var(--accent-red); padding: 8px 25px; border-radius: 10px; font-weight: 800; font-family: 'Poppins';
+    cursor: pointer; transition: 0.2s; backdrop-filter: blur(5px);
 }
 
-/* Dynamic Add Button Wrapper */
-.add-to-cart-wrapper { position: absolute; bottom: 15px; left: 15px; }
-.add-btn {
-    background: #fff; color: #E23744; border: 1px solid #eee;
-    padding: 6px 20px; border-radius: 8px; font-size: 14px; font-weight: 800;
-    cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+/* --- Floating Bottom Taskbar --- */
+.bottom-taskbar {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 400px;
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 15px 10px; border-radius: 25px; z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-.qty-control {
-    display: flex; align-items: center; background: #fff; border-radius: 8px;
-    overflow: hidden; border: 1px solid #eee;
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); cursor: pointer; position: relative;}
+.nav-item i { font-size: 20px; transition: 0.3s;}
+.nav-item span { font-size: 11px; font-weight: 600;}
+.nav-item.active { color: var(--text-main); }
+.cart-nav { position: relative; }
+.cart-badge {
+    position: absolute; top: -8px; right: -5px;
+    background: var(--accent-red); color: white; font-size: 10px; font-weight: bold;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
 }
-.qty-btn {
-    background: #fff; color: #E23744; border: none; padding: 6px 12px;
-    font-size: 16px; font-weight: bold; cursor: pointer;
-}
-.qty-count { color: #E23744; font-weight: 800; font-size: 14px; min-width: 15px; text-align: center;}
-
-/* Floating Cart */
-.floating-cart {
-    position: fixed; bottom: 15px; left: 5%; width: 90%;
-    background: #E23744; border-radius: 12px; padding: 15px 20px; box-sizing: border-box;
-    display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 10px 25px rgba(226, 55, 68, 0.4); z-index: 1000; cursor: pointer;
-}
-.cart-info { font-weight: 800; font-size: 16px; color: #fff;}
-.view-cart-btn { font-weight: bold; font-size: 14px; color: #fff;}
-
-/* Gamification Area */
-.gamification-section {
-    background: #111; border: 1px solid #222; margin: 20px 15px; padding: 25px 20px; 
-    border-radius: 16px; text-align: center; position: relative; overflow: hidden;
-}
-.legend-glow-icon {
-    font-size: 30px; color: #00E5FF; margin-bottom: 10px;
-    text-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
-}
-.gamification-section h3 { margin: 0 0 5px 0; font-size: 20px; color: #fff;}
-.gamification-section p { margin: 0 0 15px 0; font-size: 13px; color: #888; }
-.play-btn {
-    background: #00E5FF; color: #000; border: none; padding: 10px 30px;
-    border-radius: 25px; font-weight: 900; cursor: pointer; text-transform: uppercase;
-}
-.game-locked { opacity: 0.5; pointer-events: none; }
-
-/* Modals */
-.modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-    z-index: 2000; display: flex; justify-content: center; align-items: center;
-}
-.modal-content {
-    background: #111; padding: 25px; border-radius: 20px;
-    width: 90%; max-width: 400px; position: relative; border: 1px solid #222;
-}
-.close { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #666; cursor: pointer; }
-.modal-content h2 { color: #fff; margin-top: 0; font-size: 20px; text-align: center; }
 .hidden { display: none !important; }
 
-/* Checkout UI */
-.checkout-content { height: 85vh; display: flex; flex-direction: column; padding: 20px; border-radius: 20px 20px 0 0; position: absolute; bottom: 0; width: 100%; box-sizing: border-box;}
-.checkout-scroll-area { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; }
-.cart-item-row { display: flex; margin-bottom: 15px; align-items: center;}
-.cart-item-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px;}
-.cart-item-info { flex-grow: 1; }
-.cart-item-title { font-size: 14px; color: #fff; font-weight: 600; margin-bottom: 5px;}
-.cart-item-price { font-size: 13px; color: #888; }
-
-.coupon-section { background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px dashed #333;}
-.apply-btn { background: transparent; border: 1px solid #00E5FF; color: #00E5FF; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;}
-.apply-btn.applied { background: #00E5FF; color: #000; }
-
-input {
-    width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px;
-    border: 1px solid #333; background: #050505; color: #fff; box-sizing: border-box;
-}
-.submit-btn, .whatsapp-checkout-btn, .upi-checkout-btn {
-    padding: 12px; border: none; border-radius: 8px;
-    font-weight: 800; font-size: 15px; cursor: pointer;
-}
-.submit-btn { width: 100%; background: #fff; color: #000; }
-.whatsapp-checkout-btn { background: #25D366; color: #000; }
-.upi-checkout-btn { background: #00E5FF; color: #000; }
-
-.order-type-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
-.order-type-toggle button {
-    flex: 1; padding: 10px; background: #1a1a1a; color: #888; border: 1px solid #222;
-    border-radius: 8px; cursor: pointer; font-weight: bold;
-}
-.order-type-toggle button.active { background: #fff; color: #000; border-color: #fff; }
-.bill-summary p { margin: 5px 0; color: #888; display: flex; justify-content: space-between; font-size: 14px;}
-.bill-summary h3 { margin: 0; display: flex; justify-content: space-between; font-size: 18px;}
-
-/* Wallet Sidebar */
-.wallet-content { position: absolute; right: 0; top: 0; height: 100%; border-radius: 20px 0 0 20px; width: 80%; border: none; border-left: 1px solid #333;}
-.wallet-balance { background: linear-gradient(135deg, #00E5FF 0%, #0088ff 100%); padding: 20px; border-radius: 12px; text-align: center; color: #000; margin-top: 20px;}
-.wallet-balance h1 { margin: 0; font-size: 40px; }
-.wallet-balance p { margin: 0; font-weight: bold; opacity: 0.8;}
-.wallet-instructions { margin-top: 25px; color: #aaa; font-size: 13px; line-height: 1.6;}
-.logout-btn { background: transparent; color: #ff4444; border: 1px solid #ff4444; width: 100%; padding: 10px; border-radius: 8px; margin-top: 30px; cursor: pointer; font-weight: bold;}
-
-/* Footer */
-.insta-link { color: #fff; text-decoration: none; font-weight: bold; font-size: 15px; display: block; margin-bottom: 15px; }
-.powered-by { font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #555; }
-.legend-text { color: #00E5FF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
 
