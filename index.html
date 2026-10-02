@@ -3,373 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavya VIP | The Legend Menu</title>
+    <title>Kavya Family Restaurant | Premium Ordering</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Premium Icons -->
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- Professional Loading Screen -->
-    <div id="loading-screen">
-        <div class="loader-content">
-            <h1 class="brand-name" style="font-size:32px;">KAVYA</h1>
-            <div class="loader-line"></div>
-            <p style="color: #00E5FF; font-weight:bold; letter-spacing: 2px;">POWERED BY LEGEND</p>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="glass-splash">
+        <div class="splash-content">
+            <!-- Replace with actual logo later -->
+            <h1 class="brand-title">KAVYA</h1>
+            <p class="brand-subtitle">FAMILY RESTAURANT</p>
+        </div>
+        <div class="powered-by-splash">Powered by Legend</div>
+    </div>
+
+    <!-- Sticky Header & Search -->
+    <header class="glass-header">
+        <div class="location-bar">
+            <i class="fa-solid fa-location-dot text-neon"></i>
+            <span id="user-location">Detecting Location...</span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        
+        <div class="search-bar glass-panel">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search 'Biryani', 'Sweets'...">
+            <div class="mic-icon"><i class="fa-solid fa-microphone"></i></div>
+        </div>
+    </header>
+
+    <!-- Carousel Banners (Offers) -->
+    <div class="offer-carousel">
+        <div class="offer-card glass-panel" style="background: linear-gradient(135deg, rgba(226, 55, 68, 0.2), rgba(0,0,0,0));">
+            <h3>Flat 20% OFF</h3>
+            <p>On your first premium order.</p>
+        </div>
+        <!-- Add more cards for auto-scroll via JS later -->
+    </div>
+
+    <!-- Horizontal Categories -->
+    <div class="category-scroll">
+        <div class="category-item active">
+            <div class="cat-icon glass-panel"><i class="fa-solid fa-utensils"></i></div>
+            <span>All</span>
+        </div>
+        <div class="category-item">
+            <div class="cat-icon glass-panel"><i class="fa-solid fa-fire"></i></div>
+            <span>Biryani</span>
+        </div>
+        <div class="category-item">
+            <div class="cat-icon glass-panel"><i class="fa-solid fa-bowl-food"></i></div>
+            <span>Curries</span>
+        </div>
+        <div class="category-item">
+            <div class="cat-icon glass-panel"><i class="fa-solid fa-ice-cream"></i></div>
+            <span>Sweets</span>
         </div>
     </div>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="header-top">
-            <h1 class="brand-name">KAVYA RESTAURANT</h1>
-            <div id="user-profile-section">
-                <button id="login-btn" onclick="openModal('login-modal')">Login <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-                <div id="token-display" class="hidden" onclick="openTokenWallet()">
-                    <span class="legend-diamond"><i class="fa-solid fa-gem"></i></span> 
-                    <span id="token-count">0</span>
+    <!-- Full-Width Menu Cards -->
+    <main class="menu-container" id="menu-items">
+        
+        <!-- Premium Item 1 -->
+        <div class="premium-food-card glass-panel">
+            <div class="food-image-wrapper">
+                <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80" alt="Biryani">
+                <div class="badge discount-badge">33% OFF</div>
+            </div>
+            <div class="food-info">
+                <div class="food-header">
+                    <div>
+                        <div class="veg-nonveg non-veg"></div>
+                        <h3 class="food-title">Special Chicken Biryani</h3>
+                        <p class="food-rating">⭐⭐⭐⭐⭐ <span class="rating-count">(4.8)</span></p>
+                    </div>
+                    <div class="add-wrapper" id="add-wrapper-Biryani">
+                        <button class="glass-btn add-btn">ADD</button>
+                    </div>
                 </div>
+                <div class="food-price">₹299 <span class="old-price">₹450</span></div>
+                <p class="food-desc">Served with Raita & spicy Salan. Premium long-grain Basmati Rice cooked to perfection.</p>
             </div>
         </div>
-        <span class="tagline">Exclusive Digital Experience</span>
-    </div>
 
-    <!-- Dynamic Greeting -->
-    <div id="dynamic-greeting" class="hidden">
-        <span id="greeting-text">Welcome back!</span>
-    </div>
-
-    <div id="time-greeting-banner">
-        <h3 id="time-text">Preparing the best flavors for you...</h3>
-    </div>
-
-    <!-- Menu Container (11 Items) -->
-    <div class="menu-container" id="menu-items">
-        <!-- Item 1 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg non-veg"></div>
-                <h3>Special Chicken Biryani</h3>
-                <div class="price">₹299 <span class="old-price">₹450</span></div>
-                <div class="rating">⭐⭐⭐⭐⭐ <span class="rating-count">(4.8/5)</span></div>
-                <div class="desc">Served with Raita & spicy Salan. Premium Basmati Rice.</div>
-                <div class="add-to-cart-wrapper" id="add-wrapper-Biryani">
-                    <button class="add-btn" onclick="addToCart('Special Chicken Biryani', 299, 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&q=80')">ADD</button>
+        <!-- Premium Item 2 -->
+        <div class="premium-food-card glass-panel">
+            <div class="food-image-wrapper">
+                <img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=600&q=80" alt="Paneer">
+                <div class="badge bestseller-badge">Bestseller</div>
+            </div>
+            <div class="food-info">
+                <div class="food-header">
+                    <div>
+                        <div class="veg-nonveg veg"></div>
+                        <h3 class="food-title">Paneer Butter Masala</h3>
+                        <p class="food-rating">⭐⭐⭐⭐½ <span class="rating-count">(4.5)</span></p>
+                    </div>
+                    <div class="add-wrapper" id="add-wrapper-Paneer">
+                        <button class="glass-btn add-btn">ADD</button>
+                    </div>
                 </div>
-            </div>
-            <div class="food-img-container">
-                <div class="discount-badge">33% OFF</div>
-                <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80" alt="Biryani" class="food-img">
+                <div class="food-price">₹249 <span class="old-price">₹350</span></div>
+                <p class="food-desc">Rich, creamy tomato gravy with soft malai paneer cubes. A Kavya specialty.</p>
             </div>
         </div>
+        <!-- We will inject the rest of the 9 items dynamically via app.js in Phase 2 -->
+    </main>
 
-        <!-- Item 2 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Paneer Butter Masala</h3>
-                <div class="price">₹249 <span class="old-price">₹350</span></div>
-                <div class="rating">⭐⭐⭐⭐½ <span class="rating-count">(4.5/5)</span></div>
-                <div class="desc">Rich, creamy tomato gravy with soft malai paneer cubes.</div>
-                <div class="add-to-cart-wrapper" id="add-wrapper-Paneer">
-                    <button class="add-btn" onclick="addToCart('Paneer Butter Masala', 249, 'https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <div class="discount-badge">28% OFF</div>
-                <img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=400&q=80" alt="Paneer" class="food-img">
-            </div>
+    <!-- Bottom Navigation Taskbar (Frosted Glass) -->
+    <nav class="bottom-taskbar glass-panel">
+        <div class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
         </div>
-
-        <!-- Item 3 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg non-veg"></div>
-                <h3>Chicken Tikka Kebab</h3>
-                <div class="price">₹349 <span class="old-price">₹499</span></div>
-                <div class="rating">⭐⭐⭐⭐⭐ <span class="rating-count">(4.9/5)</span></div>
-                <div class="desc">Smoky, charcoal-grilled tender chicken pieces.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Chicken Tikka Kebab', 349, 'https://images.unsplash.com/photo-1599487405270-45ab10e96bf7?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1599487405270-45ab10e96bf7?w=400&q=80" alt="Kebab" class="food-img">
-            </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-bell-concierge"></i>
+            <span>Dining</span>
         </div>
-
-        <!-- Item 4 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Dal Makhani</h3>
-                <div class="price">₹199 <span class="old-price">₹250</span></div>
-                <div class="rating">⭐⭐⭐⭐ <span class="rating-count">(4.2/5)</span></div>
-                <div class="desc">Slow-cooked black lentils with fresh cream.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Dal Makhani', 199, 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80" alt="Dal" class="food-img">
-            </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-coins" style="color: #FFD700;"></i>
+            <span>Coins</span>
         </div>
-
-        <!-- Item 5 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Butter Naan (2 Pcs)</h3>
-                <div class="price">₹70</div>
-                <div class="rating">⭐⭐⭐⭐½ <span class="rating-count">(4.6/5)</span></div>
-                <div class="desc">Hot and crispy tandoori naan dripping with butter.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Butter Naan (2 Pcs)', 70, 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&q=80" alt="Naan" class="food-img">
-            </div>
+        <div class="nav-item cart-nav">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+            <!-- Cart Badge -->
+            <div class="cart-badge hidden" id="nav-cart-count">0</div>
         </div>
-
-        <!-- Item 6 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Punjabi Sweet Lassi</h3>
-                <div class="price">₹99</div>
-                <div class="rating">⭐⭐⭐⭐⭐ <span class="rating-count">(4.7/5)</span></div>
-                <div class="desc">Thick, chilled sweet yogurt drink topped with malai.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Punjabi Sweet Lassi', 99, 'https://images.unsplash.com/photo-1571115177098-24de444bb27b?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1571115177098-24de444bb27b?w=400&q=80" alt="Lassi" class="food-img">
-            </div>
-        </div>
-
-        <!-- Item 7 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg non-veg"></div>
-                <h3>Mutton Rogan Josh</h3>
-                <div class="price">₹450 <span class="old-price">₹550</span></div>
-                <div class="desc">Tender mutton chunks cooked in Kashmiri spices.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Mutton Rogan Josh', 450, 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&q=80" alt="Mutton" class="food-img">
-            </div>
-        </div>
-
-        <!-- Item 8 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Crispy Chilli Potato</h3>
-                <div class="price">₹149</div>
-                <div class="desc">Crispy fried potatoes tossed in spicy honey chilli sauce.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Crispy Chilli Potato', 149, 'https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=400&q=80" alt="Chilli Potato" class="food-img">
-            </div>
-        </div>
-
-        <!-- Item 9 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Veg Hakka Noodles</h3>
-                <div class="price">₹179</div>
-                <div class="desc">Classic wok-tossed noodles with fresh crunchy veggies.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Veg Hakka Noodles', 179, 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&q=80" alt="Noodles" class="food-img">
-            </div>
-        </div>
-
-        <!-- Item 10 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Gulab Jamun (2 Pcs)</h3>
-                <div class="price">₹60</div>
-                <div class="desc">Hot, soft milk dumplings soaked in cardamom sugar syrup.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Gulab Jamun', 60, 'https://images.unsplash.com/photo-1596450514735-3b9ffef74c43?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1596450514735-3b9ffef74c43?w=400&q=80" alt="Gulab Jamun" class="food-img">
-            </div>
-        </div>
-
-        <!-- Item 11 -->
-        <div class="food-card">
-            <div class="food-details">
-                <div class="veg-nonveg veg"></div>
-                <h3>Fresh Lime Soda</h3>
-                <div class="price">₹79</div>
-                <div class="desc">Refreshing summer drink with sweet and salt mix.</div>
-                <div class="add-to-cart-wrapper">
-                    <button class="add-btn" onclick="addToCart('Fresh Lime Soda', 79, 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&q=80')">ADD</button>
-                </div>
-            </div>
-            <div class="food-img-container">
-                <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400&q=80" alt="Soda" class="food-img">
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Gamification Section -->
-    <div class="gamification-section" id="game-section">
-        <div class="legend-glow-icon"><i class="fa-solid fa-puzzle-piece"></i></div>
-        <h3>Play & Win!</h3>
-        <p>Unlock a special discount on your current order.</p>
-        <button class="play-btn" onclick="openGameModal()">Play Now</button>
-    </div>
-
-    <!-- FOOTER -->
-    <div style="text-align: center; padding: 40px 20px 100px; background: #050505; border-top: 1px solid #111;">
-        <a href="https://instagram.com/kavyarestaurant" target="_blank" class="insta-link">
-            <i class="fa-brands fa-instagram"></i> Follow on Instagram
-        </a>
-        <div class="powered-by">
-            POWERED BY <span class="legend-text">LEGEND</span>
-        </div>
-    </div>
-
-    <!-- Floating Cart -->
-    <div id="floating-cart" class="floating-cart hidden" onclick="openCheckout()">
-        <div class="cart-info">
-            <span id="cart-item-count">0 Items</span> | <span style="font-size: 13px;">Total:</span> ₹<span id="cart-total-amount">0</span>
-        </div>
-        <div class="view-cart-btn">View Cart <i class="fa-solid fa-caret-up"></i></div>
-    </div>
-
-    <!-- MODALS SECTION (Custom In-App UI, NO BROWSER ALERTS) -->
-
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('login-modal')">&times;</span>
-            <div style="text-align:center; color:#00E5FF; font-size:30px; margin-bottom:10px;"><i class="fa-solid fa-crown"></i></div>
-            <h2>Unlock Premium Perks</h2>
-            <p style="text-align:center; color:#888; font-size:13px; margin-bottom:20px;">Join to earn Legend Tokens on every order.</p>
-            <input type="text" id="user-name" placeholder="Enter Your Name">
-            <input type="tel" id="user-phone" placeholder="WhatsApp Number">
-            <button class="submit-btn" onclick="loginUser()">Login securely</button>
-        </div>
-    </div>
-
-    <!-- Token Wallet Sidebar -->
-    <div id="wallet-modal" class="modal hidden">
-        <div class="modal-content wallet-content">
-            <span class="close" onclick="closeModal('wallet-modal')">&times;</span>
-            <h2 style="text-align:left; color:#00E5FF; display:flex; align-items:center; gap:10px;">
-                <i class="fa-solid fa-gem"></i> Legend Rewards
-            </h2>
-            <div class="wallet-balance">
-                <h1><span id="wallet-balance">0</span></h1>
-                <p>Available Tokens</p>
-            </div>
-            <div class="wallet-instructions">
-                <h4>How it works:</h4>
-                <ul>
-                    <li>Earn 10 💎 for every ₹100 spent.</li>
-                    <li>Use tokens to unlock exclusive discounts.</li>
-                    <li>Tokens are linked to your phone number.</li>
-                </ul>
-            </div>
-            <button class="logout-btn" onclick="logoutUser()">Logout <i class="fa-solid fa-power-off"></i></button>
-        </div>
-    </div>
-
-    <!-- In-App Game Modal -->
-    <div id="game-modal" class="modal hidden">
-        <div class="modal-content" style="text-align:center;">
-            <span class="close" onclick="closeModal('game-modal')">&times;</span>
-            <h2 style="color:#FFD700;"><i class="fa-solid fa-dice"></i> Legend Puzzle</h2>
-            <p style="color:#aaa; font-size:14px; margin-bottom: 20px;">Unscramble the restaurant name to win 10% OFF!</p>
-            <h1 style="letter-spacing: 5px; color:#fff; background:#222; padding:15px; border-radius:10px;">Y A K V A</h1>
-            <input type="text" id="game-answer" placeholder="Type answer here..." style="text-align:center; text-transform:uppercase; margin-top:20px;">
-            <button class="submit-btn" onclick="checkGameAnswer()" style="background:#00E5FF; color:#000;">Check Answer</button>
-            <p id="game-error" class="hidden" style="color:#ff4444; font-size:12px; margin-top:10px;">Incorrect. Try again!</p>
-        </div>
-    </div>
-
-    <!-- Game Success Modal -->
-    <div id="success-modal" class="modal hidden">
-        <div class="modal-content" style="text-align:center;">
-            <h1 style="color:#25D366; font-size:50px; margin:0;"><i class="fa-regular fa-circle-check"></i></h1>
-            <h2>Awesome!</h2>
-            <p style="color:#ccc;">You unlocked the 10% Legend Discount.</p>
-            <p style="font-size:12px; color:#888;">It has been added to your checkout.</p>
-            <button class="submit-btn" onclick="closeModal('success-modal')" style="background:#25D366; color:#000;">Go to Menu</button>
-        </div>
-    </div>
-
-    <!-- Checkout Modal (Zomato Style Cart) -->
-    <div id="checkout-modal" class="modal hidden">
-        <div class="modal-content checkout-content">
-            <span class="close" onclick="closeModal('checkout-modal')">&times;</span>
-            <h2 style="text-align:left; border-bottom:1px solid #222; padding-bottom:15px;">Order Summary</h2>
-            
-            <div id="checkout-items-list" class="checkout-scroll-area">
-                <!-- Items will be injected here via JS -->
-            </div>
-            
-            <div class="coupon-section">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fa-solid fa-tags" style="color:#00E5FF;"></i> Apply Coupon / Tokens</span>
-                    <button id="apply-discount-btn" class="apply-btn" onclick="toggleDiscount()">Apply</button>
-                </div>
-                <p id="coupon-msg" style="font-size:11px; color:#888; margin:5px 0 0 0;">Solve the puzzle to unlock coupons!</p>
-            </div>
-
-            <div class="order-type-toggle">
-                <button id="dine-in-btn" class="active" onclick="setOrderType('dine-in')">Dine-In</button>
-                <button id="delivery-btn" onclick="setOrderType('delivery')">Delivery</button>
-            </div>
-
-            <!-- Forms -->
-            <div id="dine-in-form" class="form-section">
-                <input type="text" id="table-no" placeholder="Enter Table Number">
-            </div>
-            <div id="delivery-form" class="form-section hidden">
-                <input type="text" id="address-house" placeholder="House/Flat No. & Floor">
-                <input type="text" id="address-street" placeholder="Street/Area Name">
-            </div>
-            
-            <div class="bill-summary">
-                <p>Item Total: <span style="color:#fff;">₹<span id="bill-subtotal">0</span></span></p>
-                <p id="discount-row" class="hidden" style="color:#00E5FF;">Discount: <span>-₹<span id="bill-discount">0</span></span></p>
-                <h3 style="border-top:1px dashed #333; padding-top:10px; margin-top:10px;">Grand Total: <span style="color:#FFD700;">₹<span id="bill-total">0</span></span></h3>
-            </div>
-
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="whatsapp-checkout-btn" onclick="sendOrderToWhatsApp()" style="flex:1;">
-                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                </button>
-                <button class="upi-checkout-btn" onclick="payViaUPI()" style="flex:1;">
-                    UPI Pay <i class="fa-solid fa-bolt"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+    </nav>
 
     <script src="app.js"></script>
 </body>
 </html>
+
 
 
