@@ -1,226 +1,238 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavya VIP | Powered by LEGEND</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kavya Family Restaurant | Powered by LEGEND</title>
+    <!-- CSS File Link -->
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- Premium Toast (No Alerts) -->
+    <!-- Toast Notification (Top Center) -->
     <div id="toast-container" class="toast-hidden"><span id="toast-message"></span></div>
 
-    <!-- Mandatory Login Full Screen -->
-    <div id="login-screen" class="full-screen-overlay">
-        <div class="login-box glass-panel">
-            <h1 class="brand-title">KAVYA</h1>
-            <p class="brand-subtitle" style="margin-bottom: 20px;">VIP ACCESS</p>
-            <input type="text" id="user-name" class="custom-input" placeholder="Enter Full Name">
-            <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile Number" maxlength="10">
-            <button class="glass-btn full-width" onclick="saveUserLogin()" style="font-size: 14px; padding: 12px;">Enter Restaurant <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-    </div>
+    <!-- ==========================================
+         PAGE 1: MAIN HOME PAGE
+         ========================================== -->
+    <div id="home-page" class="app-page active-page">
+        
+        <!-- STICKY TOP WRAPPER (Location + Search + Categories) -->
+        <div class="sticky-top-wrapper">
+            
+            <!-- 1. Header (Brand & Location) -->
+            <div class="header-top">
+                <div class="location-bar" onclick="requestLocation()">
+                    <i class="fa-solid fa-location-crosshairs text-neon"></i>
+                    <div class="loc-text">
+                        <span id="user-location">Tap to allow location</span>
+                        <p class="brand-name">Kavya Family Restaurant <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i></p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="profile-icon" onclick="openPage('login-page')">
+                        <i class="fa-solid fa-circle-user text-neon"></i>
+                        <span id="nav-profile-text" class="guest-text">Guest</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2. Search Bar -->
+            <div class="search-bar-container">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Restaurant name or a dish..." onkeyup="filterMenu()">
+                    <div class="mic-icon"><i class="fa-solid fa-microphone"></i></div>
+                </div>
+            </div>
 
-    <!-- TOP STICKY CONTAINER (Header + Search + Categories) -->
-    <div class="top-sticky-container glass-panel-dark">
-        <div class="header-top">
-            <div class="location-bar" onclick="requestLocation()">
-                <i class="fa-solid fa-location-crosshairs text-neon"></i>
-                <div class="loc-text">
-                    <span id="user-location">Tap to allow location</span>
-                    <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: #888;"></i>
+            <!-- 3. Horizontal Categories (Smooth Scroll) -->
+            <div class="category-scroll">
+                <div class="category-item active" onclick="setCategory('All', this)">
+                    <div class="cat-icon"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80" alt="All"></div>
+                    <span>All</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Starters', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-starter-1.jpg" alt="Starters"></div>
+                    <span>Starters</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Paneer', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-paneer-1.jpg" alt="Paneer"></div>
+                    <span>Paneer</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Rolls', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-rolls-1.jpg" alt="Rolls"></div>
+                    <span>Rolls</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Chicken', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-chicken-1.jpg" alt="Chicken"></div>
+                    <span>Chicken</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Biryani', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-biryani-1.jpg" alt="Biryani"></div>
+                    <span>Biryani</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Curries', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-curry-1.jpg" alt="Curries"></div>
+                    <span>Curries</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Sweets', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-sweet-1.jpg" alt="Sweets"></div>
+                    <span>Sweets</span>
+                </div>
+                <div class="category-item" onclick="setCategory('Beverages', this)">
+                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-bevrages-1.jpg" alt="Beverages"></div>
+                    <span>Beverages</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="coin-badge" onclick="openProfileSheet()">
-                    <i class="fa-solid fa-coins text-gold"></i> <span id="header-coin-balance">0</span>
-                </div>
-                <div class="profile-icon" onclick="openProfileSheet()">
-                    <i class="fa-solid fa-circle-user text-neon"></i>
+        </div> <!-- End Sticky Wrapper -->
+
+        <!-- Main Content Area -->
+        <div class="main-scroll-area">
+            
+            <!-- 3D Shimmer Canvas (Home) -->
+            <div class="canvas-carousel shimmer-box">
+                <div class="canvas-slide vibrant-bg">
+                    <div class="canvas-content">
+                        <h3 class="pop-3d text-gold">DINING CARNIVAL</h3>
+                        <p>Flat 20% OFF on Kavya VIP Tables</p>
+                        <button class="explore-btn" onclick="openPage('dining-page')">Explore now ></button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Menu Items -->
+            <main class="menu-container" id="menu-items"></main>
+
+            <!-- Premium Footer -->
+            <div class="vip-footer">
+                <div class="powered-by-footer">POWERED BY <span class="legend-text">LEGEND</span></div>
+            </div>
+            
+            <!-- Extra space for taskbar -->
+            <div style="height: 100px;"></div>
+        </div>
+    </div> <!-- END HOME PAGE -->
+
+
+    <!-- ==========================================
+         PAGE 2: DINING PAGE (Side Slide)
+         ========================================== -->
+    <div id="dining-page" class="app-page right-slide-page">
+        <!-- Top Left Back Button Header -->
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('dining-page')"></i>
+            <h2>Dine-In Booking</h2>
+            <div style="width: 24px;"></div> <!-- Spacer for center alignment -->
         </div>
         
-        <div class="search-bar">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="search-input" placeholder="Search for Biryani..." onkeyup="filterMenu()">
-            <div class="mic-icon" onclick="showToast('Microphone active!', 'info')"><i class="fa-solid fa-microphone"></i></div>
+        <div class="page-scroll-content">
+            <!-- 3D Shimmer Canvas (Dining Specific) -->
+            <div class="canvas-carousel shimmer-box" style="margin-top: 15px;">
+                <div class="canvas-slide vibrant-bg-2">
+                    <div class="canvas-content">
+                        <h3 class="pop-3d text-gold">RESERVE A TABLE</h3>
+                        <p>Skip the queue, book in advance.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dining Tables -->
+            <div class="table-grid" style="padding: 20px;">
+                <div class="table-card available"><h4>Table 1 <span class="badge-green">Avail</span></h4><p>2 Seater</p></div>
+                <div class="table-card available"><h4>Table 2 <span class="badge-green">Avail</span></h4><p>4 Seater</p></div>
+                <div class="table-card available"><h4>Family Table <span class="badge-green">Avail</span></h4><p>Max 10 Guests</p></div>
+                <div class="table-card booked"><h4>VIP Lounge <span class="badge-red">Booked</span></h4><p>Exclusive</p></div>
+            </div>
+            <div style="padding: 0 20px;">
+                <button class="glass-btn full-width" onclick="alert('Table booking sent to Admin!')">Confirm Table</button>
+            </div>
+            <div style="height: 100px;"></div>
         </div>
+    </div> <!-- END DINING PAGE -->
 
-        <div class="category-scroll">
-            <div class="category-item active" onclick="setCategory('All', this)">
-                <div class="cat-icon"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80" alt="All"></div>
-                <span>All</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Starters', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-starter-1.jpg" alt="Starters"></div>
-                <span>Starters</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Paneer', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-paneer-1.jpg" alt="Paneer"></div>
-                <span>Paneer</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Rolls', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-rolls-1.jpg" alt="Rolls"></div>
-                <span>Rolls</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Chicken', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-chicken-1.jpg" alt="Chicken"></div>
-                <span>Chicken</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Biryani', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-biryani-1.jpg" alt="Biryani"></div>
-                <span>Biryani</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Curries', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-curry-1.jpg" alt="Curries"></div>
-                <span>Curries</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Sweets', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-sweet-1.jpg" alt="Sweets"></div>
-                <span>Sweets</span>
-            </div>
-            <div class="category-item" onclick="setCategory('Beverages', this)">
-                <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-bevrages-1.jpg" alt="Beverages"></div>
-                <span>Beverages</span>
-            </div>
+
+    <!-- ==========================================
+         PAGE 3: CART / CHECKOUT (Side Slide)
+         ========================================== -->
+    <div id="cart-page" class="app-page right-slide-page">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('cart-page')"></i>
+            <h2>Checkout</h2>
+            <div style="width: 24px;"></div>
         </div>
-    </div>
+        <div class="page-scroll-content" style="padding: 20px;">
+            <div id="cart-items-container" class="cart-scroll-area"></div>
+            
+            <div class="bill-details">
+                <div class="bill-row"><span>Subtotal</span><span>₹<span id="bill-subtotal">0</span></span></div>
+                <div class="bill-row hidden" id="coin-discount-row" style="color:var(--veg-green);"><span>Coins Discount</span><span>-₹<span id="bill-discount">0</span></span></div>
+                
+                <div class="coin-apply-box">
+                    <input type="checkbox" id="use-coins-check" onchange="calculateFinalBill()"> 
+                    <label>Use Kavya Coins (Max 10% OFF)</label>
+                </div>
 
-    <!-- 3D Crossfade Canvas -->
-    <div class="canvas-container" onclick="openDiningSheet()">
-        <div class="canvas-slide active" style="background: linear-gradient(to top, #000 10%, transparent 100%), url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80') center/cover;">
-            <div class="canvas-content">
-                <h3 class="pop-3d">DINING CARNIVAL</h3>
-                <p>Premium VIP Tables available now.</p>
+                <div class="bill-row grand-total-row">
+                    <span>Grand Total</span><span class="text-neon" id="bill-total">₹0</span>
+                </div>
+                
+                <div class="payment-buttons">
+                    <button class="glass-btn cod-btn" onclick="processCheckout('COD')">COD</button>
+                    <button class="glass-btn upi-btn" onclick="processCheckout('UPI')">Pay via UPI <i class="fa-solid fa-bolt"></i></button>
+                </div>
             </div>
+            <div style="height: 100px;"></div>
         </div>
-        <div class="canvas-slide" style="background: linear-gradient(to top, #000 10%, transparent 100%), url('https://images.unsplash.com/photo-1590846406792-0adc7f928a18?w=800&q=80') center/cover;">
-            <div class="canvas-content">
-                <h3 class="pop-3d text-gold">KAVYA COINS</h3>
-                <p>Earn 1% Cashback on every meal.</p>
+    </div> <!-- END CART PAGE -->
+
+
+    <!-- ==========================================
+         PAGE 4: LOGIN / VIP ACCESS (Side Slide)
+         ========================================== -->
+    <div id="login-page" class="app-page right-slide-page">
+        <div class="page-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('login-page')"></i>
+            <h2>VIP Access</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="page-scroll-content" style="padding: 30px 20px;">
+            <div style="text-align:center; margin-bottom: 30px;">
+                <h1 style="color: var(--liquid-gold); font-size: 32px; font-weight: 900; margin: 0;">KAVYA</h1>
+                <p style="color: var(--accent-neon); letter-spacing: 2px; font-size: 12px;">FAMILY RESTAURANT</p>
             </div>
+            <p style="color:#888; font-size:13px; margin-bottom: 20px; text-align:center;">Enter details for delivery & Kavya Coins.</p>
+            <input type="text" id="user-name" class="custom-input" placeholder="Enter Full Name">
+            <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile Number" maxlength="10">
+            <button class="glass-btn full-width" style="margin-top: 10px;" onclick="saveUserLogin()">Continue Securely</button>
         </div>
-    </div>
+    </div> <!-- END LOGIN PAGE -->
 
-    <!-- Menu Container -->
-    <main class="menu-container" id="menu-items"></main>
 
-    <!-- VIP FOOTER (Neon Blue Legend) -->
-    <div class="vip-footer">
-        <a href="https://instagram.com/kavyarestaurant" target="_blank" class="insta-btn"><i class="fa-brands fa-instagram"></i> Follow on Instagram</a>
-        <div class="powered-by-footer">POWERED BY <span class="legend-text">LEGEND</span></div>
-    </div>
-
-    <!-- Smart Auto-Hide Bottom Taskbar -->
-    <nav class="bottom-taskbar glass-panel" id="smart-taskbar">
-        <div class="nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></div>
-        <div class="nav-item" onclick="openDiningSheet()"><i class="fa-solid fa-bell-concierge"></i><span>Dining</span></div>
-        <div class="nav-item" onclick="showToast('Your past orders will appear here.', 'info')"><i class="fa-solid fa-clock-rotate-left"></i><span>Orders</span></div>
-        <div class="nav-item cart-nav" onclick="openCartSheet()">
+    <!-- ==========================================
+         SMART BOTTOM TASKBAR (Always Visible)
+         ========================================== -->
+    <nav class="bottom-taskbar" id="smart-taskbar">
+        <div class="nav-item active" onclick="openPage('home-page')">
+            <i class="fa-solid fa-house"></i><span>Delivery</span>
+        </div>
+        <div class="nav-item" onclick="openPage('dining-page')">
+            <i class="fa-solid fa-bell-concierge"></i><span>Dining</span>
+        </div>
+        <div class="nav-item cart-nav" onclick="openPage('cart-page')">
             <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
             <div class="cart-badge hidden" id="nav-cart-count">0</div>
         </div>
     </nav>
 
-    <!-- FULL SCREEN SHEETS -->
-    <!-- Profile Sheet -->
-    <div id="profile-sheet" class="full-screen-sheet">
-        <div class="sheet-header">
-            <h3><i class="fa-solid fa-circle-user text-neon"></i> My Account</h3>
-            <i class="fa-solid fa-circle-xmark close-sheet" onclick="closeAllSheets()"></i>
-        </div>
-        <div class="sheet-body">
-            <div class="profile-details">
-                <h2 id="prof-name">Name</h2>
-                <p id="prof-phone" class="text-muted">+91 XXXXX XXXXX</p>
-            </div>
-            <div class="coin-wallet-box">
-                <h4><i class="fa-solid fa-coins text-gold"></i> Kavya Coins: <span id="prof-coins" class="text-neon">0</span></h4>
-                <ul class="coin-rules">
-                    <li>Earn 1 coin per ₹100 spent.</li>
-                    <li>1 Coin = ₹1. Max 10% OFF per bill.</li>
-                </ul>
-            </div>
-            <button class="glass-btn full-width" style="background: rgba(226, 55, 68, 0.1); color: var(--nonveg-red);" onclick="logoutUser()">Logout Account</button>
-        </div>
-    </div>
-
-    <!-- Dine-In Sheet -->
-    <div id="dining-sheet" class="full-screen-sheet">
-        <div class="sheet-header">
-            <h3><i class="fa-solid fa-bell-concierge text-neon"></i> Dine-In Booking</h3>
-            <i class="fa-solid fa-circle-xmark close-sheet" onclick="closeAllSheets()"></i>
-        </div>
-        <div class="sheet-body">
-            <div class="canvas-slide active" style="background: linear-gradient(to top, #000 0%, transparent 100%), url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80') center/cover; height: 150px; border-radius:15px; margin-bottom: 20px;">
-                <div class="canvas-content"><h3 class="pop-3d text-gold">VIP DINING</h3></div>
-            </div>
-            <div class="table-grid">
-                <div class="table-card available" onclick="openBookingForm('Table 1 (2 Seater)')"><h4>Table 1 <span class="badge-green">Available</span></h4><p>2 Seater</p></div>
-                <div class="table-card available" onclick="openBookingForm('Table 2 (4 Seater)')"><h4>Table 2 <span class="badge-green">Available</span></h4><p>4 Seater</p></div>
-                <div class="table-card available" onclick="openBookingForm('Family Table')"><h4>Family Table <span class="badge-green">Available</span></h4><p>Max 12 Guests</p></div>
-                <div class="table-card booked"><h4>VIP Lounge <span class="badge-red">Not Available</span></h4><p>Exclusive</p></div>
-            </div>
-            <div id="booking-form" class="hidden" style="margin-top: 20px; border-top: 1px dashed #333; padding-top: 15px;">
-                <h4 id="selected-table-name" class="text-neon" style="margin-bottom: 15px;">Selected Table</h4>
-                <input type="number" id="guest-count" class="custom-input" placeholder="Guests (Max 12)" max="12" min="1">
-                <select id="booking-time" class="custom-input">
-                    <option value="">Select Time Slot</option>
-                    <option value="7:00 PM">7:00 PM</option><option value="8:00 PM">8:00 PM</option><option value="9:00 PM">9:00 PM</option>
-                </select>
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom: 15px;">
-                    <input type="checkbox" id="pre-order-check" style="width: 18px; height: 18px;"> 
-                    <label style="font-size: 13px;">Pre-order food from Cart</label>
-                </div>
-                <button class="glass-btn full-width" onclick="submitBooking()">Confirm Booking</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cart Sheet -->
-    <div id="checkout-sheet" class="full-screen-sheet">
-        <div class="sheet-header">
-            <h3><i class="fa-solid fa-receipt text-neon"></i> Checkout</h3>
-            <i class="fa-solid fa-circle-xmark close-sheet" onclick="closeAllSheets()"></i>
-        </div>
-        <div class="sheet-body" style="padding-bottom: 100px;">
-            <div id="cart-items-container" class="cart-scroll-area"></div>
-            <div class="bill-details">
-                <div class="bill-row" style="font-size:14px; font-weight:normal;"><span>Subtotal</span><span>₹<span id="bill-subtotal">0</span></span></div>
-                <div class="bill-row hidden" id="coin-discount-row" style="font-size:14px; font-weight:normal; color:var(--veg-green);"><span>Coins Discount</span><span>-₹<span id="bill-discount">0</span></span></div>
-                
-                <div style="display:flex; align-items:center; gap:10px; margin: 15px 0; background: #111; padding: 12px; border-radius: 10px;">
-                    <input type="checkbox" id="use-coins-check" onchange="calculateFinalBill()" style="width: 18px; height: 18px;"> 
-                    <label style="font-size: 12px; color: var(--accent-gold);">Use Kavya Coins (Max 10% OFF)</label>
-                </div>
-
-                <div class="bill-row" style="font-size: 22px; border-top: 1px dashed #444; padding-top: 15px; margin-top: 10px;">
-                    <span>Grand Total</span><span class="text-neon">₹<span id="bill-total">0</span></span>
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="glass-btn" style="flex: 1; background: #222; color: #fff;" onclick="processCheckout('COD')">COD</button>
-                    <button class="glass-btn" style="flex: 2;" onclick="processCheckout('UPI')">Pay via UPI <i class="fa-solid fa-bolt"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay for Payment -->
-    <div id="loading-overlay" class="hidden full-screen-overlay">
-        <div style="text-align:center;">
-            <div class="gps-pulse" style="width:20px; height:20px; margin: 0 auto 20px; animation-duration: 1s;"></div>
-            <h3>Waiting for Restaurant...</h3>
-            <p class="text-muted" style="font-size: 12px;">Please wait while we confirm your payment.</p>
-        </div>
-    </div>
-
+    <!-- JS File Link -->
     <script src="app.js"></script>
 </body>
 </html>
+
 
 
