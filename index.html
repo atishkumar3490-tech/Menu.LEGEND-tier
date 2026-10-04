@@ -9,11 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- GOLDEN SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-logo">
+            <h1 class="pop-3d" style="color: var(--liquid-gold); font-size: 45px; margin: 0;">KAVYA</h1>
+            <p style="color: var(--accent-neon); letter-spacing: 4px; font-size: 13px; font-weight: 800; margin-top: 5px;">VIP DINING EXPERIENCE</p>
+        </div>
+        <div class="loader-line"></div>
+    </div>
+
     <div id="toast-container" class="toast-hidden"><span id="toast-message"></span></div>
 
-    <!-- ==========================================
-         PAGE 1: MAIN HOME PAGE (Seamless Zomato Look)
-         ========================================== -->
+    <!-- PAGE 1: HOME PAGE -->
     <div id="home-page" class="app-page active-page">
         <div class="hero-seamless-bg">
             <div class="top-sticky-header" id="main-header">
@@ -52,114 +59,77 @@
 
         <div class="category-sticky-zone">
             <div class="category-scroll">
-                <div class="category-item active" onclick="setCategory('All', this)">
-                    <div class="cat-icon"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80"></div>
-                    <span>All</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Starters', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-starter-1.jpg"></div>
-                    <span>Starters</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Rolls', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-rolls-1.jpg"></div>
-                    <span>Rolls</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Paneer', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-paneer-1.jpg"></div>
-                    <span>Paneer</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Chicken', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-chicken-1.jpg"></div>
-                    <span>Chicken</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Biryani', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-biryani-1.jpg"></div>
-                    <span>Biryani</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Curries', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-curry-1.jpg"></div>
-                    <span>Curries</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Sweets', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-sweet-1.jpg"></div>
-                    <span>Sweets</span>
-                </div>
-                <div class="category-item" onclick="setCategory('Beverages', this)">
-                    <div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-bevrages-1.jpg"></div>
-                    <span>Beverages</span>
-                </div>
+                <div class="category-item active" onclick="setCategory('All', this)"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80"></div><span>All</span></div>
+                <div class="category-item" onclick="setCategory('Starters', this)"><div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-starter-1.jpg"></div><span>Starters</span></div>
+                <div class="category-item" onclick="setCategory('Rolls', this)"><div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-rolls-1.jpg"></div><span>Rolls</span></div>
+                <div class="category-item" onclick="setCategory('Paneer', this)"><div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-paneer-1.jpg"></div><span>Paneer</span></div>
+                <div class="category-item" onclick="setCategory('Chicken', this)"><div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-chicken-1.jpg"></div><span>Chicken</span></div>
+                <div class="category-item" onclick="setCategory('Biryani', this)"><div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-biryani-1.jpg"></div><span>Biryani</span></div>
+                <div class="category-item" onclick="setCategory('Sweets', this)"><div class="cat-icon"><img src="https://raw.githubusercontent.com/atishkumar3490-tech/Menu.LEGEND-tier/refs/heads/main/cat-sweet-1.jpg"></div><span>Sweets</span></div>
             </div>
         </div>
 
         <main class="menu-container" id="menu-items"></main>
 
         <div class="vip-footer">
-            <a href="https://www.instagram.com/kavyafamilyrestaurant?stkn=MWNxZ3hjMzR1eGJ0eQ==" target="_blank" class="insta-link"><i class="fa-brands fa-instagram"></i> Follow us on Instagram</a>
+            <a href="https://www.instagram.com/kavyafamilyrestaurant" target="_blank" class="insta-link"><i class="fa-brands fa-instagram"></i> Follow us on Instagram</a>
             <div class="powered-by-footer" style="margin-top: 15px;">POWERED BY <span class="legend-text">LEGEND</span></div>
         </div>
         <div style="height: 100px;"></div>
     </div> 
 
-
-    <!-- ==========================================
-         PAGE 2: DINING PAGE
-         ========================================== -->
+    <!-- PAGE 2: DINING PAGE (Full Canvas) -->
     <div id="dining-page" class="app-page right-slide-page">
         <div class="page-header">
             <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('dining-page')"></i>
             <h2>Dine-In Booking</h2>
-            <div style="width: 24px;"></div>
+            <div class="profile-icon" onclick="openPage('login-page')" style="width:30px; height:30px; font-size:14px;"><i class="fa-solid fa-user"></i></div>
         </div>
         <div class="page-scroll-content">
-            <div class="canvas-carousel shimmer-box" style="margin: 15px 20px; border-radius: 16px;">
-                <div class="canvas-slide" style="background: linear-gradient(135deg, #0f2027, #2c5364); padding: 30px 10px;">
-                    <div class="canvas-content text-center">
-                        <h3 class="pop-3d" style="color:var(--liquid-gold); font-size:26px;">RESERVE A TABLE</h3>
-                        <p style="color:#fff; font-size:12px; margin-top:5px;">Skip the queue, book in advance.</p>
-                    </div>
+            <!-- Full width canvas -->
+            <div class="canvas-slide" style="background: linear-gradient(135deg, #0f2027, #2c5364); padding: 40px 10px; width: 100%;">
+                <div class="canvas-content text-center">
+                    <h3 class="pop-3d" style="color:var(--liquid-gold); font-size:32px;">DINING CARNIVAL</h3>
+                    <p style="color:#fff; font-size:14px; margin-top:5px; font-weight:600;">Reserve your VIP table now.</p>
                 </div>
             </div>
-            <div class="table-grid" style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #222;">
-                    <h4 style="color:#fff; margin-bottom:5px;">Table 1 <span class="badge-green" style="background:rgba(37,211,102,0.15); color:var(--veg-green); padding:2px 6px; font-size:10px; border-radius:4px;">Avail</span></h4>
+            
+            <h3 style="padding: 20px 20px 5px; font-size: 18px;">Select a Table</h3>
+            <div class="table-grid" style="padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #333;">
+                    <h4 style="color:#fff; margin-bottom:5px;">Table 1 <span style="background:rgba(37,211,102,0.15); color:var(--veg-green); padding:2px 6px; font-size:10px; border-radius:4px; float:right;">Avail</span></h4>
                     <p style="color:#888; font-size:12px;">2 Seater</p>
                 </div>
-                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #222;">
-                    <h4 style="color:#fff; margin-bottom:5px;">Table 2 <span class="badge-green" style="background:rgba(37,211,102,0.15); color:var(--veg-green); padding:2px 6px; font-size:10px; border-radius:4px;">Avail</span></h4>
+                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #333;">
+                    <h4 style="color:#fff; margin-bottom:5px;">Table 2 <span style="background:rgba(37,211,102,0.15); color:var(--veg-green); padding:2px 6px; font-size:10px; border-radius:4px; float:right;">Avail</span></h4>
                     <p style="color:#888; font-size:12px;">4 Seater</p>
                 </div>
-                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #222;">
-                    <h4 style="color:#fff; margin-bottom:5px;">Family Table <span class="badge-green" style="background:rgba(37,211,102,0.15); color:var(--veg-green); padding:2px 6px; font-size:10px; border-radius:4px;">Avail</span></h4>
+                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #333;">
+                    <h4 style="color:#fff; margin-bottom:5px;">Family <span style="background:rgba(37,211,102,0.15); color:var(--veg-green); padding:2px 6px; font-size:10px; border-radius:4px; float:right;">Avail</span></h4>
                     <p style="color:#888; font-size:12px;">Max 10 Guests</p>
                 </div>
-                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #222;">
-                    <h4 style="color:#fff; margin-bottom:5px;">VIP Lounge <span class="badge-red" style="background:rgba(226,55,68,0.15); color:#E23744; padding:2px 6px; font-size:10px; border-radius:4px;">Booked</span></h4>
+                <div class="table-card" style="background:#111; padding:15px; border-radius:10px; border:1px solid #333;">
+                    <h4 style="color:#fff; margin-bottom:5px;">VIP Lounge <span style="background:rgba(226,55,68,0.15); color:#E23744; padding:2px 6px; font-size:10px; border-radius:4px; float:right;">Booked</span></h4>
                     <p style="color:#888; font-size:12px;">Exclusive</p>
                 </div>
             </div>
-            <div style="padding: 0 20px;">
-                <button style="width:100%; background:var(--accent-neon); color:#000; padding:12px; border-radius:8px; font-weight:800; border:none;" onclick="alert('Booking request sent!')">Confirm Table</button>
+            <div style="padding: 20px;">
+                <button style="width:100%; background:var(--liquid-gold); color:#000; padding:14px; border-radius:8px; font-weight:900; border:none; font-size:15px;" onclick="alert('Booking request sent to owner!')">Confirm Reservation</button>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         PAGE 3: CART PAGE
-         ========================================== -->
+    <!-- PAGE 3: CART PAGE -->
     <div id="cart-page" class="app-page right-slide-page">
         <div class="page-header">
             <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('cart-page')"></i>
             <h2>Checkout</h2>
             <div style="width: 24px;"></div>
         </div>
-        <div class="page-scroll-content" style="padding: 20px;" id="cart-items-container">
-            <!-- JS WILL INJECT CART ITEMS & BILLING HERE -->
-        </div>
+        <div class="page-scroll-content" style="padding: 20px;" id="cart-items-container"></div>
     </div>
 
-    <!-- ==========================================
-         PAGE 4: LOGIN / PROFILE PAGE
-         ========================================== -->
+    <!-- PAGE 4: LOGIN / PROFILE PAGE -->
     <div id="login-page" class="app-page right-slide-page">
         <div class="page-header">
             <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('login-page')"></i>
@@ -169,11 +139,10 @@
         <div class="page-scroll-content" style="padding: 30px 20px;" id="login-form-container">
             <div style="text-align:center; margin-bottom: 30px;">
                 <h1 style="color: var(--liquid-gold); font-size: 32px; font-weight: 900; margin: 0;">KAVYA</h1>
-                <p style="color: var(--accent-neon); letter-spacing: 2px; font-size: 12px;">FAMILY RESTAURANT</p>
+                <p style="color: var(--accent-neon); letter-spacing: 2px; font-size: 12px;">LOGIN REQUIRED TO ORDER</p>
             </div>
-            <p style="color:#888; font-size:13px; margin-bottom: 20px; text-align:center;">Enter details for delivery & Kavya Coins.</p>
-            <input type="text" id="user-name" class="custom-input" placeholder="Enter Full Name" style="width:100%; background:#111; color:#fff; padding:14px; border:1px solid #333; border-radius:8px; margin-bottom:15px;">
-            <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile Number" maxlength="10" style="width:100%; background:#111; color:#fff; padding:14px; border:1px solid #333; border-radius:8px; margin-bottom:15px;">
+            <input type="text" id="user-name" class="custom-input" placeholder="Enter Full Name (Required)" style="width:100%; background:#111; color:#fff; padding:14px; border:1px solid #333; border-radius:8px; margin-bottom:15px;">
+            <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile Number (Required)" maxlength="10" style="width:100%; background:#111; color:#fff; padding:14px; border:1px solid #333; border-radius:8px; margin-bottom:15px;">
             <button style="width:100%; background:var(--accent-neon); color:#000; font-weight:800; padding:14px; border:none; border-radius:8px;" onclick="saveUserLogin()">Continue Securely</button>
         </div>
     </div>
