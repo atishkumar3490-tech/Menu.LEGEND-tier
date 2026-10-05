@@ -92,6 +92,9 @@
                 </div>
             </header>
 
+            <!-- 🛠️ BUG FIXED HERE: Added missing greeting div! -->
+            <div id="dynamic-greeting" class="bespoke-greeting"></div>
+
             <!-- Zomato Style Promotional Banner -->
             <div class="z-banner-wrap">
                 <div class="z-promo-card">
@@ -102,7 +105,7 @@
             </div>
         </div> 
 
-        <!-- Horizontal Scroll Category Bar (Normal Scroll as requested) -->
+        <!-- Horizontal Scroll Category Bar -->
         <div class="z-cat-section">
             <div class="z-cat-scroll" id="category-scroll-container">
                 <!-- Injected via JS -->
@@ -138,16 +141,16 @@
             </div>
             
             <div class="z-dining-body">
-                <h4 class="z-section-title">Reserve a Table</h4>
-                <div class="z-card">
-                    <label class="z-label">Number of Guests</label>
+                <h4 class="z-section-title" style="padding: 20px;">Reserve a Table</h4>
+                <div class="z-card" style="margin: 0 20px;">
+                    <label class="z-label text-muted">Number of Guests</label>
                     <div class="z-counter-box">
                         <button onclick="updateGuests(-1)">-</button>
-                        <span id="guest-count">2 Guests</span>
+                        <span id="guest-count" style="color:#fff; font-weight:800; font-size:18px;">2 Guests</span>
                         <button onclick="updateGuests(1)">+</button>
                     </div>
                     
-                    <label class="z-label mt-15">Select Time Slot</label>
+                    <label class="z-label text-muted mt-15" style="display:block;">Select Time Slot</label>
                     <input type="time" class="z-input mt-5" value="19:30">
                     
                     <button class="z-gold-btn mt-20" onclick="showToast('Table Request Sent to Kavya Admin!')">Confirm Reservation</button>
@@ -213,61 +216,5 @@
     <script src="ui.js"></script>
     <script src="app.js"></script>
 
-        <!-- ==========================================
-         PAGE 3: SECURE CART & CHECKOUT
-         ========================================== -->
-    <div id="cart-page" class="z-page right-slide-page">
-        <header class="z-sub-header">
-            <i class="fa-solid fa-arrow-left z-back" onclick="closePage('cart-page')"></i>
-            <h2>Secure Checkout</h2>
-            <div style="width: 24px;"></div>
-        </header>
-        
-        <div class="z-scroll-content p-20" id="cart-items-container">
-            <!-- JS Will Inject Cart Items, GST, Free Delivery & Billing Here -->
-        </div>
-    </div>
-
-
-    <!-- ==========================================
-         PAGE 4: VIP PROFILE & AUTH
-         ========================================== -->
-    <div id="login-page" class="z-page right-slide-page">
-        <header class="z-sub-header">
-            <i class="fa-solid fa-arrow-left z-back" onclick="closePage('login-page')"></i>
-            <h2>VIP Portal</h2>
-            <div style="width: 24px;"></div>
-        </header>
-        
-        <div class="z-scroll-content p-20" id="auth-container">
-            <!-- JS Will Inject Profile Dashboard / Login Form Here -->
-        </div>
-    </div>
-
-
-    <!-- ==========================================
-         ZOMATO BOTTOM TASKBAR
-         ========================================== -->
-    <nav class="z-taskbar">
-        <div class="z-nav-item active" onclick="openPage('home-page')">
-            <i class="fa-solid fa-house"></i>
-            <span>Delivery</span>
-        </div>
-        <div class="z-nav-item" onclick="openPage('dining-page')">
-            <i class="fa-solid fa-bell-concierge"></i>
-            <span>Dining</span>
-        </div>
-        <div class="z-nav-item z-cart-tab" onclick="openPage('cart-page')">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>Cart</span>
-            <div class="z-badge hidden" id="nav-cart-count">0</div>
-        </div>
-    </nav>
-
-    <!-- Modular Scripts Engine -->
-    <script src="data.js"></script>
-    <script src="ui.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>
-
