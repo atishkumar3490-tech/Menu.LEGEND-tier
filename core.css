@@ -1,92 +1,486 @@
-/* =========================================
-   CORE.CSS - Base Structure & Typography
-   ========================================= */
-:root { 
-    --bg-dark: #050505; 
-    --bg-card: #121212;
-    --zomato-red: #E23744; 
-    --zomato-dark-red: #b71c1c; 
-    --liquid-gold: #D4AF37; 
-    --accent-neon: #00E5FF; 
-    --veg-green: #25D366; 
-    --nonveg-red: #E23744; 
-    --text-main: #ffffff;
-    --text-muted: #888888; 
+/* ==========================================================
+   CORE.CSS - Enterprise Zomato Layout & Grid Architecture
+   ========================================================== */
+
+:root {
+    --z-bg: #050505;
+    --z-card-bg: #121212;
+    --z-red: #E23744;
+    --z-dark-red: #b71c1c;
+    --z-gold: #D4AF37;
+    --z-neon: #00E5FF;
+    --z-green: #25D366;
+    --z-text: #FFFFFF;
+    --z-muted: #888888;
+    --z-border: #222222;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
-::-webkit-scrollbar { display: none !important; }
-html, body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; scroll-behavior: smooth; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
 
-/* Global Utilities */
+::-webkit-scrollbar {
+    display: none !important;
+}
+
+html, body {
+    background-color: var(--z-bg);
+    color: var(--z-text);
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    width: 100vw;
+    position: relative;
+}
+
+/* --- UTILITY CLASSES --- */
 .hidden { display: none !important; }
-.mt-5 { margin-top: 5px; } .mt-15 { margin-top: 15px; } .mt-20 { margin-top: 20px; }
-.mb-15 { margin-bottom: 15px; } .p-20 { padding: 20px; }
-.text-xs { font-size: 10px; } .text-sm { font-size: 12px; }
-.text-muted { color: var(--text-muted); } .text-green { color: var(--veg-green); }
+.mt-5 { margin-top: 5px; }
+.mt-10 { margin-top: 10px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+.mb-15 { margin-bottom: 15px; }
+.p-20 { padding: 20px; }
+.text-xs { font-size: 10px; }
+.text-sm { font-size: 12px; }
+.text-muted { color: var(--z-muted); }
+.text-green { color: var(--z-green); }
+.text-red { color: var(--z-red); }
 
-/* Pages System */
-.app-page { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: var(--bg-dark); overflow-y: auto; overflow-x: hidden; display: none; }
-.active-page { display: block; z-index: 10; }
-.right-slide-page { display: block; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 50; }
-.right-slide-page.open { transform: translateX(0); }
-.page-scroll-content { padding-bottom: 120px; }
-.bottom-spacer { height: 100px; }
+/* --- APP PAGES SYSTEM --- */
+.z-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--z-bg);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: none;
+    z-index: 10;
+}
 
-/* Headers (Core) */
-.dark-header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid #1a1a1a; }
-.dark-header h2 { font-size: 16px; font-weight: 600; color: #fff; margin: 0; }
-.back-btn { font-size: 20px; color: #fff; cursor: pointer; padding: 5px; }
+.z-page.active-page {
+    display: block;
+}
 
-/* Zomato Header Zone */
-.hero-red-zone { background: linear-gradient(135deg, var(--zomato-red), #c62828); padding-bottom: 25px; border-radius: 0 0 24px 24px; position: relative; overflow: hidden; }
-.top-sticky-header { position: sticky; top: -1px; z-index: 1000; padding-top: 15px; transition: all 0.3s ease; }
-.header-top-row { display: flex; justify-content: space-between; align-items: center; padding: 0 15px 12px; }
+.right-slide-page {
+    display: block;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 50;
+    background: var(--z-bg);
+}
 
-/* Location & Icons */
-.location-wrapper { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
-.loc-icon { color: #fff; font-size: 18px; margin-top: 2px; }
-.loc-details { display: flex; flex-direction: column; }
-.loc-title { font-size: 15px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 5px; }
-.loc-subtitle { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-.header-actions { display: flex; align-items: center; gap: 12px; }
-.coin-pill { background: rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.5); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; color: var(--liquid-gold); display: flex; align-items: center; gap: 5px; cursor: pointer; }
-.profile-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.4); cursor: pointer; }
-.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.right-slide-page.open {
+    transform: translateX(0);
+}
 
-/* Search Bar Structure */
-.search-container { padding: 0 15px 10px; }
-.smart-search-box { display: flex; align-items: center; padding: 12px 15px; border-radius: 14px; background: #fff; }
-.search-input { flex-grow: 1; background: transparent; border: none; color: #000; margin-left: 10px; outline: none; font-size: 14px; font-weight: 600; }
-.search-icon, .mic-icon { color: var(--zomato-red); font-size: 18px; }
-.divider { width: 1px; height: 18px; background: #ddd; margin: 0 12px; }
+.z-scroll-content {
+    padding-bottom: 120px;
+}
 
-/* Apple-Style Horizontal Menu Grid */
-.category-sticky-zone { position: sticky; top: 60px; z-index: 990; background: rgba(5,5,5,0.98); padding: 20px 0 10px; border-radius: 24px 24px 0 0; margin-top: -20px; transition: padding 0.3s ease, box-shadow 0.3s ease; }
-.category-scroll { display: flex; gap: 18px; padding: 0 15px; overflow-x: auto; scroll-behavior: smooth; }
-.category-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 70px; cursor: pointer; }
-.category-item span { font-size: 12px; font-weight: 600; color: var(--text-muted); transition: font-size 0.3s; }
-.category-item.active span { color: #fff; }
+.z-spacer {
+    height: 100px;
+}
 
-/* Wide Food Cards (Structure) */
-.menu-container { padding: 10px 0; }
-.wide-food-card { background: var(--bg-card); border-bottom: 8px solid var(--bg-dark); width: 100%; position: relative; margin-bottom: 10px; }
-.wide-img-box { width: 100%; height: 260px; position: relative; overflow: hidden; }
-.wide-img-box img { width: 100%; height: 100%; object-fit: cover; }
-.wide-info { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
-.food-title-col { width: 68%; }
-.veg-tag { width: 14px; height: 14px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; border-radius: 3px; }
-.veg-tag-inner { width: 6px; height: 6px; border-radius: 50%; }
-.food-name { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.2; }
-.food-price { font-size: 17px; font-weight: 800; color: #fff; margin-top: 5px; }
+/* --- HEADERS --- */
+.z-sub-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(5, 5, 5, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 100;
+    border-bottom: 1px solid var(--z-border);
+}
 
-/* Forms & Inputs */
-.custom-input { width: 100%; background: #1a1a1a; color: #fff; padding: 15px; border: 1px solid #333; border-radius: 10px; margin-bottom: 15px; font-size: 14px; outline: none; font-weight: 500; }
-.primary-btn { width: 100%; background: var(--zomato-red); color: #fff; font-weight: 800; padding: 15px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+.z-sub-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
 
-/* Bottom Taskbar */
-.bottom-taskbar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,10,0.98); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 12px 5px 25px; border-top: 1px solid #1a1a1a; z-index: 999; }
-.nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 11px; font-weight: 600; gap: 5px; position: relative; cursor: pointer; }
-.nav-item.active { color: #fff; }
-.nav-item i { font-size: 20px; }
-.cart-badge { position: absolute; top: -6px; right: -8px; background: var(--zomato-red); color: #fff; font-size: 10px; font-weight: 900; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+.z-back {
+    font-size: 20px;
+    color: #fff;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* --- ZOMATO RED HEADER ZONE (HOME) --- */
+.z-red-header-zone {
+    background: linear-gradient(135deg, var(--z-red), var(--z-dark-red));
+    padding-bottom: 25px;
+    border-radius: 0 0 28px 28px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(226, 55, 68, 0.3);
+}
+
+.z-sticky-nav {
+    position: sticky;
+    top: -1px;
+    z-index: 1000;
+    padding-top: 15px;
+    background: transparent;
+}
+
+.z-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px 12px;
+}
+
+.z-loc-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.z-loc-pin {
+    color: #fff;
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.z-loc-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.z-loc-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.z-loc-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 2px;
+}
+
+.z-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.z-coin-badge {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(212, 175, 55, 0.6);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--z-gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.z-profile-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+}
+
+.z-profile-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- SEARCH BAR --- */
+.z-search-wrap {
+    padding: 0 15px 10px;
+}
+
+.z-search-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 18px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.z-search-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    color: #000;
+    margin-left: 12px;
+    outline: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.z-search-ico, .z-mic-ico {
+    color: var(--z-red);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.z-search-div {
+    width: 1px;
+    height: 18px;
+    background: #dddddd;
+    margin: 0 12px;
+}
+
+/* --- HORIZONTAL CATEGORY BAR --- */
+.z-cat-section {
+    padding: 20px 0 10px;
+    background: transparent;
+}
+
+.z-cat-scroll {
+    display: flex;
+    gap: 18px;
+    padding: 0 15px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.z-cat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 75px;
+    cursor: pointer;
+}
+
+.z-cat-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.z-cat-icon img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #222;
+}
+
+.z-cat-item.active .z-cat-icon img {
+    border-color: var(--z-neon);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+}
+
+.z-cat-item span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--z-muted);
+}
+
+.z-cat-item.active span {
+    color: #fff;
+}
+/* --- WIDE FOOD CARDS (FEED) --- */
+.z-feed-container {
+    padding: 10px 0;
+}
+
+.z-food-card {
+    background: var(--z-card-bg);
+    border-bottom: 8px solid var(--z-bg);
+    width: 100%;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.z-food-img-box {
+    width: 100%;
+    height: 270px;
+    position: relative;
+    overflow: hidden;
+}
+
+.z-food-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.z-bookmark-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 42px;
+    height: 42px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.z-food-info {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.z-food-details {
+    width: 68%;
+}
+
+.z-veg-dot {
+    width: 14px;
+    height: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3px;
+    margin-bottom: 8px;
+}
+
+.z-veg-inner {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.z-food-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.z-rating-tag {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid var(--z-gold);
+    color: var(--z-gold);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    gap: 4px;
+}
+
+.z-food-price {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 6px;
+}
+
+/* --- BUTTONS & CONTROLS --- */
+.z-add-btn {
+    background: rgba(226, 55, 68, 0.12);
+    color: var(--z-red);
+    border: 1px solid var(--z-red);
+    padding: 8px 28px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(226, 55, 68, 0.2);
+}
+
+.z-qty-box {
+    display: flex;
+    align-items: center;
+    background: rgba(226, 55, 68, 0.15);
+    border: 1px solid var(--z-red);
+    border-radius: 12px;
+    padding: 4px;
+    width: 100px;
+    justify-content: space-between;
+}
+
+.z-qty-box button {
+    background: transparent;
+    color: var(--z-red);
+    border: none;
+    font-size: 20px;
+    font-weight: 900;
+    padding: 0 12px;
+    cursor: pointer;
+}
+
+/* --- ZOMATO BOTTOM TASKBAR --- */
+.z-taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(10, 10, 10, 0.98);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 5px 25px;
+    border-top: 1px solid var(--z-border);
+    z-index: 999;
+}
+
+.z-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--z-muted);
+    font-size: 11px;
+    font-weight: 600;
+    gap: 5px;
+    position: relative;
+    cursor: pointer;
+}
+
+.z-nav-item.active {
+    color: #fff;
+}
+
+.z-nav-item i {
+    font-size: 20px;
+}
+
+.z-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--z-red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
