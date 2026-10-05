@@ -1,155 +1,238 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kavya Family Restaurant</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kavya Family Restaurant - Premium Dining</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets (Modular) -->
+    <link rel="stylesheet" href="core.css">
+    <link rel="stylesheet" href="premium.css">
 </head>
 <body>
-    <!-- AURORA GLOW BACKGROUND -->
-    <div class="aurora-bg"></div>
 
-    <!-- GOLDEN SPLASH SCREEN -->
-    <div id="splash-screen">
-        <h1 class="pop-3d" style="color: var(--liquid-gold); font-size: 45px; margin: 0;">KAVYA</h1>
-        <p style="color: var(--accent-neon); letter-spacing: 4px; font-size: 13px; font-weight: 800;">VIP DINING</p>
-        <div class="loader-line"></div>
-    </div>
-
-    <!-- COIN CELEBRATION POPUP -->
-    <div id="coin-celebration" class="hidden">
-        <div class="celebration-box">
-            <i class="fa-solid fa-gem" style="font-size: 50px; color: var(--liquid-gold); margin-bottom: 15px; animation: bounce 1s infinite;"></i>
-            <h2 style="color: #fff; font-weight: 900; font-size: 24px; margin-bottom: 5px;">CONGRATULATIONS!</h2>
-            <p style="color: var(--text-muted); font-size: 14px;">You earned <span id="earned-coins" style="color: var(--accent-neon); font-weight: 800; font-size: 18px;">0</span> Kavya Coins!</p>
-            <button onclick="document.getElementById('coin-celebration').classList.add('hidden')" style="margin-top: 20px; background: var(--liquid-gold); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 900;">Awesome</button>
+    <!-- 1. SPLASH SCREEN (Golden Glow) -->
+    <div id="splash-screen" class="premium-splash">
+        <div class="splash-content">
+            <h1 class="brand-title-3d">KAVYA</h1>
+            <p class="brand-subtitle">FAMILY RESTAURANT</p>
+            <div class="shimmer-loader"></div>
         </div>
     </div>
 
-    <!-- FLAVOR SLIDER (SPICE LEVEL) POPUP -->
-    <div id="flavor-slider-modal" class="hidden">
-        <div class="flavor-box">
-            <h3 style="color:#fff; margin-bottom:5px;">Customize Flavor</h3>
-            <p style="font-size:12px; color:#888; margin-bottom:15px;">Set spice level for your dish.</p>
-            <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:20px;">
+    <!-- 2. GLOBAL TOAST NOTIFICATION -->
+    <div id="toast-container" class="toast-hidden">
+        <div class="toast-content">
+            <i id="toast-icon" class="fa-solid fa-bell"></i>
+            <span id="toast-message">Notification</span>
+        </div>
+    </div>
+
+    <!-- 3. KAVYA COIN CELEBRATION (3D Overlay) -->
+    <div id="coin-celebration" class="glass-overlay hidden">
+        <div class="celebration-card bounce-in">
+            <div class="coin-3d-wrapper"><i class="fa-solid fa-coins"></i></div>
+            <h2 class="celeb-title">BOOM! 🎉</h2>
+            <p class="celeb-text">You earned <span id="earned-coins" class="neon-text">0</span> Kavya Coins!</p>
+            <button class="gold-gradient-btn mt-20" onclick="closePopup('coin-celebration')">Claim Reward</button>
+        </div>
+    </div>
+
+    <!-- 4. FLAVOR SLIDER (Apple Style Bottom Sheet) -->
+    <div id="flavor-slider-modal" class="glass-overlay hidden">
+        <div class="bottom-sheet slide-up">
+            <div class="sheet-handle"></div>
+            <h3>Customize Flavor</h3>
+            <p class="text-muted text-sm mb-15">Set spice level for your dish.</p>
+            <div class="spice-selector">
                 <div class="spice-btn active" onclick="setSpice(this, 'Mild')">Mild 🌿</div>
                 <div class="spice-btn" onclick="setSpice(this, 'Medium')">Medium 🌶️</div>
                 <div class="spice-btn" onclick="setSpice(this, 'Fire')">Fire 🔥</div>
             </div>
-            <button id="confirm-flavor-btn" class="primary-btn">Add to Cart</button>
+            <button id="confirm-flavor-btn" class="primary-btn mt-20">Add to Cart</button>
         </div>
     </div>
 
-    <div id="toast-container" class="toast-hidden"><span id="toast-message"></span></div>
 
-    <!-- PAGE 1: HOME PAGE -->
+    <!-- ==========================================
+         PAGE 1: MAIN HOME (Delivery)
+         ========================================== -->
     <div id="home-page" class="app-page active-page">
-        <div class="zomato-red-bg">
-            <div class="top-sticky-header" id="main-header">
-                <div class="header-top">
-                    <div class="location-bar" onclick="requestLocation()">
-                        <i class="fa-solid fa-location-crosshairs text-white"></i>
-                        <div class="loc-text">
-                            <span id="user-location">Tap to allow location <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i></span>
-                            <p class="brand-name">Kavya Family Restaurant</p>
+        <!-- Zomato Style Premium Header Zone -->
+        <div class="hero-red-zone">
+            
+            <!-- Sticky Smart Header -->
+            <header class="top-sticky-header" id="main-header">
+                <div class="header-top-row">
+                    <!-- GPS Location Area -->
+                    <div class="location-wrapper" onclick="requestLocation()">
+                        <i class="fa-solid fa-location-crosshairs loc-icon"></i>
+                        <div class="loc-details">
+                            <span class="loc-title" id="user-location">Setup Location <i class="fa-solid fa-chevron-down text-xs"></i></span>
+                            <span class="loc-subtitle">Kavya Family Restaurant</span>
                         </div>
                     </div>
-                    <div class="profile-icon" onclick="openPage('login-page')">
-                        <img id="nav-profile-pic" src="https://via.placeholder.com/150/111/888?text=VIP" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                    
+                    <!-- Profile & Coins -->
+                    <div class="header-actions">
+                        <div class="coin-pill" onclick="openPage('login-page')">
+                            <i class="fa-solid fa-coins"></i> <span id="top-coin-bal">0</span>
+                        </div>
+                        <div class="profile-avatar" onclick="openPage('login-page')">
+                            <img id="nav-profile-pic" src="https://via.placeholder.com/150/222/fff?text=VIP" alt="Profile">
+                        </div>
                     </div>
                 </div>
-                <div class="search-bar-container">
-                    <div class="search-bar">
+
+                <!-- Search Bar with Mic -->
+                <div class="search-container">
+                    <div class="smart-search-box">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" class="search-input search-input-rotate" placeholder="Search for food..." onkeyup="filterMenu()">
-                        <div class="mic-divider"></div>
+                        <input type="text" id="main-search" class="search-input" placeholder="Search for food..." onkeyup="filterMenu()">
+                        <div class="divider"></div>
                         <i class="fa-solid fa-microphone mic-icon"></i>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <!-- BESPOKE GREETING -->
-            <div id="dynamic-greeting" style="padding: 15px 20px 0; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.9);">
-                <!-- JS will inject personalized greeting here -->
-            </div>
+            <!-- Dynamic Greeting -->
+            <div id="dynamic-greeting" class="bespoke-greeting">Welcome, Legend!</div>
 
-            <div class="banner-zone">
-                <h2 class="burst-text">ITEMS AT 50% OFF</h2>
-                <p style="color: #fff; font-weight: 600; margin-top: 5px; font-size: 14px;">with FREE delivery</p>
-                <div class="order-now-pill" onclick="document.getElementById('menu-items').scrollIntoView({behavior: 'smooth'})">Order now <i class="fa-solid fa-chevron-right"></i></div>
+            <!-- Promotional Canvas/Banner with Shine -->
+            <div class="promo-banner-container">
+                <div class="promo-banner">
+                    <div class="shine-effect"></div>
+                    <h2 class="promo-title">ITEMS AT 50% OFF</h2>
+                    <p class="promo-sub">with FREE Delivery</p>
+                </div>
             </div>
         </div> 
 
-        <div class="category-sticky-zone">
-            <div class="category-scroll">
-                <div class="category-item active" onclick="setCategory('All', this)"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80"></div><span>All</span></div>
-                <div class="category-item" onclick="setCategory('Biryani', this)"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&q=80"></div><span>Biryani</span></div>
-                <div class="category-item" onclick="setCategory('Curries', this)"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&q=80"></div><span>Curries</span></div>
-                <div class="category-item" onclick="setCategory('Rolls', this)"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1549110781-79b88f343f7a?w=200&q=80"></div><span>Rolls</span></div>
-                <div class="category-item" onclick="setCategory('Sweets', this)"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1596450514735-3b9ffef74c43?w=200&q=80"></div><span>Sweets</span></div>
+        <!-- Apple Style Horizontal Menu (Sticky) -->
+        <div class="category-sticky-zone" id="category-menu">
+            <div class="category-scroll" id="category-scroll-container">
+                <!-- JS Will Inject Categories Here -->
             </div>
         </div>
 
-        <!-- WIDE IMAGES CONTAINER -->
-        <main class="menu-container-wide" id="menu-items"></main>
-        <div style="height: 100px;"></div>
+        <!-- Food Items Grid (Wide HD Cards) -->
+        <main class="menu-container" id="menu-items-container">
+            <!-- JS Will Inject Menu Items Here -->
+        </main>
+        
+        <div class="bottom-spacer"></div>
     </div> 
 
-    <!-- PAGE 2: DINING PAGE -->
+
+    <!-- ==========================================
+         PAGE 2: DINING (Table Booking)
+         ========================================== -->
     <div id="dining-page" class="app-page right-slide-page">
-        <div class="zomato-dark-header">
-            <div class="header-top">
-                <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('dining-page')"></i>
-                <div class="location-bar" style="flex:1; margin-left:15px;"><span style="color:#fff; font-weight:800; font-size:15px;">Dining Carnival</span></div>
-            </div>
-            <div class="search-bar-container">
-                <div class="search-bar"><i class="fa-solid fa-magnifying-glass search-icon"></i><input type="text" class="search-input" placeholder="Search moods..."><div class="mic-divider"></div><i class="fa-solid fa-microphone mic-icon"></i></div>
-            </div>
-        </div>
+        <header class="dark-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('dining-page')"></i>
+            <h2>Table Booking</h2>
+            <div style="width: 24px;"></div>
+        </header>
+        
         <div class="page-scroll-content">
-            <div class="canvas-slide" style="background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80') center/cover; padding: 60px 20px; width: 100%; position:relative;">
-                <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);"></div>
-                <div class="canvas-content text-center" style="position:relative; z-index:2;">
-                    <h3 class="pop-3d" style="color:var(--liquid-gold); font-size:35px;">BOOK A TABLE</h3>
-                    <p style="color:#fff; font-size:14px; margin-top:5px; font-weight:600;">Extra ₹175 OFF on first booking</p>
+            <!-- Full Width Cinematic Canvas -->
+            <div class="cinematic-canvas">
+                <div class="overlay"></div>
+                <div class="canvas-text">
+                    <h3 class="brand-title-3d">RESERVE A TABLE</h3>
+                    <p>Skip the queue, dine like a VIP.</p>
                 </div>
             </div>
-            <h3 style="padding: 20px 20px 5px; font-size: 18px; color:#fff;">What's the mood?</h3>
-            <div class="table-grid" style="padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="mood-card" onclick="alert('Table Requested!')"><h4>Family Dining</h4><p>Max 6 Guests</p></div>
-                <div class="mood-card" onclick="alert('Table Requested!')"><h4>Cozy Couples</h4><p>2 Seater VIP</p></div>
+            
+            <div class="booking-section">
+                <h4 class="section-title">Booking Details</h4>
+                <div class="booking-card">
+                    <label>Number of Guests</label>
+                    <div class="guest-counter">
+                        <button onclick="updateGuests(-1)">-</button>
+                        <span id="guest-count">2 Guests</span>
+                        <button onclick="updateGuests(1)">+</button>
+                    </div>
+                    
+                    <label class="mt-15">Time Slot</label>
+                    <input type="time" class="custom-input mt-5" value="19:30">
+                    
+                    <button class="gold-gradient-btn mt-20" onclick="showToast('Table Request Sent to Kavya Admin!')">Confirm Reservation</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- PAGE 3: CART PAGE -->
+
+    <!-- ==========================================
+         PAGE 3: CART & CHECKOUT
+         ========================================== -->
     <div id="cart-page" class="app-page right-slide-page">
-        <div class="page-header"><i class="fa-solid fa-arrow-left back-btn" onclick="closePage('cart-page')"></i><h2>Checkout</h2><div style="width: 24px;"></div></div>
-        <div class="page-scroll-content" style="padding: 20px;">
-            <div id="cart-items-container"></div>
-            <!-- BILLING DETAILS JS WILL INJECT HERE -->
+        <header class="dark-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('cart-page')"></i>
+            <h2>Checkout</h2>
+            <div style="width: 24px;"></div>
+        </header>
+        
+        <div class="page-scroll-content p-20">
+            <!-- Delivery Estimate -->
+            <div class="delivery-estimate-card">
+                <i class="fa-solid fa-clock-rotate-left text-green"></i>
+                <div class="estimate-text">
+                    <strong>Delivery in 30-40 mins</strong>
+                    <span>Food is freshly prepared after order.</span>
+                </div>
+            </div>
+
+            <div id="cart-items-container">
+                <!-- JS Will Inject Cart Items & Billing Here -->
+            </div>
         </div>
     </div>
 
-    <!-- PAGE 4: LOGIN / PROFILE -->
+
+    <!-- ==========================================
+         PAGE 4: LOGIN / VIP PROFILE
+         ========================================== -->
     <div id="login-page" class="app-page right-slide-page">
-        <div class="page-header"><i class="fa-solid fa-arrow-left back-btn" onclick="closePage('login-page')"></i><h2>VIP Access</h2><div style="width: 24px;"></div></div>
-        <div class="page-scroll-content" style="padding: 30px 20px;" id="login-form-container">
-            <!-- Handled by JS -->
+        <header class="dark-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('login-page')"></i>
+            <h2>VIP Access</h2>
+            <div style="width: 24px;"></div>
+        </header>
+        
+        <div class="page-scroll-content p-20" id="auth-container">
+            <!-- JS Will Inject Login Form or Profile Dashboard Here -->
         </div>
     </div>
 
+
+    <!-- ==========================================
+         BOTTOM TASKBAR (Apple Style)
+         ========================================== -->
     <nav class="bottom-taskbar" id="smart-taskbar">
-        <div class="nav-item active" onclick="openPage('home-page')"><i class="fa-solid fa-house"></i><span>Delivery</span></div>
-        <div class="nav-item" onclick="openPage('dining-page')"><i class="fa-solid fa-bell-concierge"></i><span>Dining</span></div>
+        <div class="nav-item active" onclick="openPage('home-page')">
+            <i class="fa-solid fa-house"></i>
+            <span>Delivery</span>
+        </div>
+        <div class="nav-item" onclick="openPage('dining-page')">
+            <i class="fa-solid fa-bell-concierge"></i>
+            <span>Dining</span>
+        </div>
         <div class="nav-item cart-nav" onclick="openPage('cart-page')">
-            <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
             <div class="cart-badge hidden" id="nav-cart-count">0</div>
         </div>
     </nav>
+
+    <!-- Scripts (Modular) -->
+    <script src="data.js"></script>
+    <script src="ui.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
