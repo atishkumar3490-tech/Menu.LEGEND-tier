@@ -1,0 +1,176 @@
+/* =========================================
+   PREMIUM.CSS - Apple/Zomato Max-Tier UI
+   ========================================= */
+
+/* --- 1. AURORA GLOW (Dynamic Animated Background) --- */
+.aurora-bg {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+    background: radial-gradient(circle at 10% 20%, rgba(226, 55, 68, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.03) 0%, transparent 60%);
+    background-color: var(--bg-dark);
+    animation: auroraShift 20s ease-in-out infinite alternate;
+}
+@keyframes auroraShift { 
+    0% { transform: scale(1) translate(0, 0); } 
+    50% { transform: scale(1.05) translate(2%, 2%); }
+    100% { transform: scale(1) translate(-2%, -2%); } 
+}
+
+/* --- 2. GOLDEN SPLASH SCREEN (Cinematic Entry) --- */
+.premium-splash {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+    background: #000; z-index: 999999;
+    display: flex; justify-content: center; align-items: center;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s;
+}
+.premium-splash.fade-out { opacity: 0; transform: scale(1.05); pointer-events: none; }
+.splash-content { text-align: center; animation: pulseGlow 2s infinite alternate; }
+.brand-title-3d {
+    font-size: 55px; font-weight: 900; color: var(--liquid-gold); margin: 0;
+    text-shadow: 0 5px 15px rgba(212,175,55,0.4), 0 1px 3px rgba(0,0,0,0.8);
+    letter-spacing: 2px;
+}
+.brand-subtitle { color: var(--accent-neon); font-size: 14px; font-weight: 800; letter-spacing: 5px; margin-top: 5px; }
+.shimmer-loader {
+    width: 200px; height: 4px; background: #222; margin: 25px auto 0;
+    border-radius: 10px; position: relative; overflow: hidden;
+}
+.shimmer-loader::after {
+    content: ''; position: absolute; top: 0; left: 0; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--liquid-gold), transparent);
+    animation: loadingBar 1.2s infinite ease-in-out;
+}
+@keyframes pulseGlow { 0% { filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); } 100% { filter: drop-shadow(0 0 30px rgba(212,175,55,0.6)); } }
+@keyframes loadingBar { 0% { left: -50%; } 100% { left: 100%; } }
+
+/* --- 3. PREMIUM ZOMATO BANNER (With Metallic Shine) --- */
+.promo-banner-container { padding: 5px 20px 15px; perspective: 1000px; }
+.promo-banner {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #000000, #1a1a1a);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+    padding: 25px 20px; text-align: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    transform-style: preserve-3d; transition: transform 0.3s ease;
+}
+.promo-banner:active { transform: scale(0.97) rotateX(5deg); }
+.shine-effect {
+    position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-20deg); animation: shinePass 4s infinite;
+}
+@keyframes shinePass { 0%, 20% { left: -100%; } 80%, 100% { left: 200%; } }
+.promo-title { font-size: 38px; font-weight: 900; color: #fff; font-style: italic; letter-spacing: -1px; text-shadow: 3px 3px 0px var(--zomato-red); line-height: 1.1; }
+.promo-sub { color: #fff; font-weight: 600; font-size: 14px; margin-top: 8px; color: var(--liquid-gold); }
+
+/* --- 4. APPLE-STYLE HORIZONTAL MENU (3D Plates & Shrink Effect) --- */
+.category-sticky-zone.scrolled {
+    padding: 10px 0 5px; background: rgba(5,5,5,0.85); backdrop-filter: blur(15px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.cat-icon {
+    width: 74px; height: 74px; position: relative; border-radius: 50%;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), width 0.3s, height 0.3s;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+.cat-icon img {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    border: 3px solid #222; transition: border-color 0.3s, filter 0.3s;
+}
+/* The "3D Plate" Shadow under the image */
+.cat-icon::after {
+    content: ''; position: absolute; bottom: -8px; left: 10%; width: 80%; height: 10px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, transparent 70%);
+    z-index: -1; transition: opacity 0.3s;
+}
+.category-item.active .cat-icon { transform: translateY(-5px); }
+.category-item.active .cat-icon img { border-color: var(--accent-neon); box-shadow: 0 0 20px rgba(0, 229, 255, 0.3); }
+.category-item:active .cat-icon { transform: scale(0.9); }
+
+/* Apple Header Shrink Logic */
+.category-sticky-zone.scrolled .cat-icon { width: 48px; height: 48px; }
+.category-sticky-zone.scrolled .cat-icon::after { opacity: 0; }
+.category-sticky-zone.scrolled .category-item span { font-size: 10px; opacity: 0.8; }
+
+/* --- 5. NEXT-LEVEL FOOD CARDS (Wide HD with Micro-interactions) --- */
+.wide-food-card { transition: transform 0.2s ease, opacity 0.5s ease; opacity: 0; animation: fadeUp 0.6s forwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.wide-img-box img { transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.wide-food-card:active .wide-img-box img { transform: scale(1.08); }
+.bookmark-icon {
+    position: absolute; top: 15px; right: 15px; width: 42px; height: 42px;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+    font-size: 18px; color: #fff; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.bookmark-icon:active { transform: scale(0.8); }
+.bookmark-icon.bookmarked { background: rgba(0,0,0,0.8); color: var(--liquid-gold); transform: scale(1.1); border-color: var(--liquid-gold); }
+
+/* Apple-style add button */
+.add-btn {
+    background: rgba(226,55,68,0.1); color: var(--zomato-red);
+    border: 1px solid var(--zomato-red); padding: 8px 28px; border-radius: 12px;
+    font-weight: 800; font-size: 14px; cursor: pointer;
+    box-shadow: 0 4px 10px rgba(226,55,68,0.15); transition: all 0.2s;
+}
+.add-btn:active { background: var(--zomato-red); color: #fff; transform: scale(0.95); }
+.qty-control { display: flex; align-items: center; background: rgba(226,55,68,0.15); border: 1px solid var(--zomato-red); border-radius: 10px; padding: 4px; width: 100px; justify-content: space-between; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+.qty-control button { background: transparent; color: var(--zomato-red); border: none; font-size: 20px; font-weight: 900; padding: 0 12px; cursor: pointer; }
+.qty-control button:active { transform: scale(0.8); }
+
+/* --- 6. GLASSMORPHISM POPUPS & BOTTOM SHEETS --- */
+.glass-overlay { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; }
+.glass-overlay.hidden { opacity: 0; pointer-events: none; backdrop-filter: blur(0px); transition: opacity 0.3s, backdrop-filter 0.3s; }
+
+/* 3D Coin Popup */
+.celebration-card {
+    background: linear-gradient(145deg, rgba(20,20,20,0.9), rgba(5,5,5,0.9));
+    border: 1px solid rgba(212,175,55,0.4); padding: 40px 30px; border-radius: 28px; text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+    transform: scale(1); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.bounce-in { animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* Apple Bottom Sheet (Flavor Slider) */
+.bottom-sheet {
+    background: #111; width: 100%; position: absolute; bottom: 0;
+    border-radius: 30px 30px 0 0; padding: 25px 20px 40px;
+    border-top: 1px solid #333; box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+}
+.slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideUp { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
+.sheet-handle { width: 40px; height: 5px; background: #333; border-radius: 3px; margin: 0 auto 20px; }
+.spice-selector { display: flex; gap: 12px; margin-bottom: 25px; }
+.spice-btn { background: #1a1a1a; color: #888; padding: 15px 10px; border-radius: 14px; flex: 1; text-align: center; font-size: 14px; font-weight: 700; border: 1px solid #222; transition: all 0.3s; cursor: pointer; }
+.spice-btn.active { background: rgba(226,55,68,0.1); border-color: var(--zomato-red); color: var(--zomato-red); box-shadow: 0 4px 15px rgba(226,55,68,0.2); transform: translateY(-3px); }
+
+/* --- 7. CINEMATIC DINING CANVAS --- */
+.cinematic-canvas { height: 350px; background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1000&q=80') center/cover fixed; position: relative; display: flex; justify-content: center; align-items: center; }
+.cinematic-canvas .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.2), #050505); }
+.canvas-text { position: relative; z-index: 2; text-align: center; }
+.canvas-text p { color: #ccc; font-size: 14px; font-weight: 600; letter-spacing: 1px; margin-top: 5px; }
+.booking-section { padding: 0 20px; margin-top: -40px; position: relative; z-index: 3; }
+.booking-card { background: #121212; padding: 25px 20px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+.guest-counter { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 12px; margin-top: 8px; border: 1px solid #333; }
+.guest-counter button { background: var(--bg-card); border: 1px solid #333; color: #fff; width: 45px; height: 45px; border-radius: 10px; font-size: 22px; cursor: pointer; transition: 0.2s; }
+.guest-counter button:active { background: #333; transform: scale(0.9); }
+
+/* --- 8. GLOBAL NOTIFICATIONS (Apple Toast) --- */
+#toast-container { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: rgba(20,20,20,0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 14px 25px; border-radius: 30px; font-size: 13px; font-weight: 600; z-index: 999999; display: flex; align-items: center; gap: 10px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+#toast-container.show { top: 40px; }
+
+/* Buttons & Gradients */
+.gold-gradient-btn { width: 100%; background: linear-gradient(135deg, var(--liquid-gold), #ffdf00); color: #000; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 900; box-shadow: 0 5px 20px rgba(212,175,55,0.4); transition: transform 0.2s; cursor: pointer; }
+.gold-gradient-btn:active { transform: scale(0.96); }
+
+/* Profile Progress Bar */
+.profile-card { background: linear-gradient(145deg, #111, #1a1a1a); border: 1px solid #333; border-radius: 20px; padding: 25px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.progress-track { background: #000; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin: 15px 0 5px; border: 1px solid #222; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+.progress-fill { background: linear-gradient(90deg, var(--zomato-red), var(--accent-neon)); height: 100%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+
+/* Delivery Estimate Card */
+.delivery-estimate-card { background: linear-gradient(90deg, rgba(37,211,102,0.1), transparent); border-left: 4px solid var(--veg-green); border-radius: 0 12px 12px 0; padding: 15px; display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
