@@ -3,165 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Kavya Family Restaurant - Premium Dining</title>
+    <title>Kavya Family Restaurant - Ultimate Zomato Clone</title>
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Stylesheets (Modular) -->
+    <!-- Modular Stylesheets -->
     <link rel="stylesheet" href="core.css">
     <link rel="stylesheet" href="premium.css">
 </head>
-<body>
+<body class="zomato-body">
 
-    <!-- 1. SPLASH SCREEN (Golden Glow) -->
-    <div id="splash-screen" class="premium-splash">
-        <div class="splash-content">
-            <h1 class="brand-title-3d">KAVYA</h1>
-            <p class="brand-subtitle">FAMILY RESTAURANT</p>
-            <div class="shimmer-loader"></div>
+    <!-- 1. CINEMATIC GOLDEN SPLASH SCREEN -->
+    <div id="splash-screen" class="z-splash">
+        <div class="z-splash-content">
+            <h1 class="z-brand-3d">KAVYA</h1>
+            <p class="z-sub-brand">FAMILY RESTAURANT</p>
+            <div class="z-shimmer-line"></div>
         </div>
     </div>
 
-    <!-- 2. GLOBAL TOAST NOTIFICATION -->
-    <div id="toast-container" class="toast-hidden">
-        <div class="toast-content">
-            <i id="toast-icon" class="fa-solid fa-bell"></i>
-            <span id="toast-message">Notification</span>
+    <!-- 2. GLOBAL APPLE-STYLE TOAST -->
+    <div id="toast-container" class="z-toast-hidden">
+        <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <!-- 3. 3D COIN REWARD POPUP -->
+    <div id="coin-celebration" class="z-overlay hidden">
+        <div class="z-celeb-card z-bounce">
+            <div class="z-coin-3d"><i class="fa-solid fa-coins"></i></div>
+            <h2 class="z-celeb-title">BOOM! 🎉</h2>
+            <p class="z-celeb-text">You earned <span id="earned-coins" class="z-neon">0</span> Kavya Coins!</p>
+            <button class="z-gold-btn mt-20" onclick="closePopup('coin-celebration')">Claim Reward</button>
         </div>
     </div>
 
-    <!-- 3. KAVYA COIN CELEBRATION (3D Overlay) -->
-    <div id="coin-celebration" class="glass-overlay hidden">
-        <div class="celebration-card bounce-in">
-            <div class="coin-3d-wrapper"><i class="fa-solid fa-coins"></i></div>
-            <h2 class="celeb-title">BOOM! 🎉</h2>
-            <p class="celeb-text">You earned <span id="earned-coins" class="neon-text">0</span> Kavya Coins!</p>
-            <button class="gold-gradient-btn mt-20" onclick="closePopup('coin-celebration')">Claim Reward</button>
-        </div>
-    </div>
-
-    <!-- 4. FLAVOR SLIDER (Apple Style Bottom Sheet) -->
-    <div id="flavor-slider-modal" class="glass-overlay hidden">
-        <div class="bottom-sheet slide-up">
-            <div class="sheet-handle"></div>
-            <h3>Customize Flavor</h3>
-            <p class="text-muted text-sm mb-15">Set spice level for your dish.</p>
-            <div class="spice-selector">
-                <div class="spice-btn active" onclick="setSpice(this, 'Mild')">Mild 🌿</div>
-                <div class="spice-btn" onclick="setSpice(this, 'Medium')">Medium 🌶️</div>
-                <div class="spice-btn" onclick="setSpice(this, 'Fire')">Fire 🔥</div>
+    <!-- 4. FLAVOR SLIDER BOTTOM SHEET -->
+    <div id="flavor-slider-modal" class="z-overlay hidden">
+        <div class="z-bottom-sheet z-slide-up">
+            <div class="z-sheet-handle"></div>
+            <h3 class="z-sheet-title">Customize Flavor</h3>
+            <p class="z-text-muted text-sm mb-15">Select spice level for your dish.</p>
+            <div class="z-spice-grid">
+                <div class="z-spice-btn active" onclick="setSpice(this, 'Mild')">Mild 🌿</div>
+                <div class="z-spice-btn" onclick="setSpice(this, 'Medium')">Medium 🌶️</div>
+                <div class="z-spice-btn" onclick="setSpice(this, 'Fire')">Fire 🔥</div>
             </div>
-            <button id="confirm-flavor-btn" class="primary-btn mt-20">Add to Cart</button>
+            <button id="confirm-flavor-btn" class="z-primary-btn mt-20">Confirm & Add</button>
         </div>
     </div>
 
 
     <!-- ==========================================
-         PAGE 1: MAIN HOME (Delivery)
+         PAGE 1: DELIVERY HOME
          ========================================== -->
-    <div id="home-page" class="app-page active-page">
-        <!-- Zomato Style Premium Header Zone -->
-        <div class="hero-red-zone">
-            
-            <!-- Sticky Smart Header -->
-            <header class="top-sticky-header" id="main-header">
-                <div class="header-top-row">
-                    <!-- GPS Location Area -->
-                    <div class="location-wrapper" onclick="requestLocation()">
-                        <i class="fa-solid fa-location-crosshairs loc-icon"></i>
-                        <div class="loc-details">
-                            <span class="loc-title" id="user-location">Setup Location <i class="fa-solid fa-chevron-down text-xs"></i></span>
-                            <span class="loc-subtitle">Kavya Family Restaurant</span>
+    <div id="home-page" class="z-page active-page">
+        <!-- Zomato Red Sticky Header Zone -->
+        <div class="z-red-header-zone">
+            <header class="z-sticky-nav" id="main-header">
+                <div class="z-header-row">
+                    <div class="z-loc-box" onclick="requestLocation()">
+                        <i class="fa-solid fa-location-dot z-loc-pin"></i>
+                        <div class="z-loc-text">
+                            <span class="z-loc-title" id="user-location">Ramkrishna Nagar <i class="fa-solid fa-chevron-down text-xs"></i></span>
+                            <span class="z-loc-sub">Patna, Bihar, India</span>
                         </div>
                     </div>
-                    
-                    <!-- Profile & Coins -->
-                    <div class="header-actions">
-                        <div class="coin-pill" onclick="openPage('login-page')">
-                            <i class="fa-solid fa-coins"></i> <span id="top-coin-bal">0</span>
+                    <div class="z-header-right">
+                        <div class="z-coin-badge" onclick="openPage('login-page')">
+                            <i class="fa-solid fa-coins"></i> <span id="top-coin-bal">50</span>
                         </div>
-                        <div class="profile-avatar" onclick="openPage('login-page')">
-                            <img id="nav-profile-pic" src="https://via.placeholder.com/150/222/fff?text=VIP" alt="Profile">
+                        <div class="z-profile-btn" onclick="openPage('login-page')">
+                            <img id="nav-profile-pic" src="https://via.placeholder.com/150/222/fff?text=L" alt="Profile">
                         </div>
                     </div>
                 </div>
 
-                <!-- Search Bar with Mic -->
-                <div class="search-container">
-                    <div class="smart-search-box">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="main-search" class="search-input" placeholder="Search for food..." onkeyup="filterMenu()">
-                        <div class="divider"></div>
-                        <i class="fa-solid fa-microphone mic-icon"></i>
+                <!-- Sticky Search Bar with Mic -->
+                <div class="z-search-wrap">
+                    <div class="z-search-bar">
+                        <i class="fa-solid fa-magnifying-glass z-search-ico"></i>
+                        <input type="text" id="main-search" class="z-search-input" placeholder="Search 'Chicken Biryani'..." onkeyup="filterMenu()">
+                        <div class="z-search-div"></div>
+                        <i class="fa-solid fa-microphone z-mic-ico" onclick="showToast('Listening for voice search...')"></i>
                     </div>
                 </div>
             </header>
 
-            <!-- Dynamic Greeting -->
-            <div id="dynamic-greeting" class="bespoke-greeting">Welcome, Legend!</div>
-
-            <!-- Promotional Canvas/Banner with Shine -->
-            <div class="promo-banner-container">
-                <div class="promo-banner">
-                    <div class="shine-effect"></div>
-                    <h2 class="promo-title">ITEMS AT 50% OFF</h2>
-                    <p class="promo-sub">with FREE Delivery</p>
+            <!-- Zomato Style Promotional Banner -->
+            <div class="z-banner-wrap">
+                <div class="z-promo-card">
+                    <div class="z-shine"></div>
+                    <h2 class="z-banner-title">ITEMS AT 50% OFF</h2>
+                    <p class="z-banner-sub">with FREE Delivery above ₹99</p>
                 </div>
             </div>
         </div> 
 
-        <!-- Apple Style Horizontal Menu (Sticky) -->
-        <div class="category-sticky-zone" id="category-menu">
-            <div class="category-scroll" id="category-scroll-container">
-                <!-- JS Will Inject Categories Here -->
+        <!-- Horizontal Scroll Category Bar (Normal Scroll as requested) -->
+        <div class="z-cat-section">
+            <div class="z-cat-scroll" id="category-scroll-container">
+                <!-- Injected via JS -->
             </div>
         </div>
 
-        <!-- Food Items Grid (Wide HD Cards) -->
-        <main class="menu-container" id="menu-items-container">
-            <!-- JS Will Inject Menu Items Here -->
+        <!-- Food Feed (Wide HD Cards) -->
+        <main class="z-feed-container" id="menu-items-container">
+            <!-- Injected via JS -->
         </main>
         
-        <div class="bottom-spacer"></div>
+        <div class="z-spacer"></div>
     </div> 
 
 
     <!-- ==========================================
-         PAGE 2: DINING (Table Booking)
+         PAGE 2: DINING & TABLE BOOKING
          ========================================== -->
-    <div id="dining-page" class="app-page right-slide-page">
-        <header class="dark-header">
-            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('dining-page')"></i>
-            <h2>Table Booking</h2>
+    <div id="dining-page" class="z-page right-slide-page">
+        <header class="z-sub-header">
+            <i class="fa-solid fa-arrow-left z-back" onclick="closePage('dining-page')"></i>
+            <h2>Dining & Table Booking</h2>
             <div style="width: 24px;"></div>
         </header>
         
-        <div class="page-scroll-content">
-            <!-- Full Width Cinematic Canvas -->
-            <div class="cinematic-canvas">
-                <div class="overlay"></div>
-                <div class="canvas-text">
-                    <h3 class="brand-title-3d">RESERVE A TABLE</h3>
-                    <p>Skip the queue, dine like a VIP.</p>
+        <div class="z-scroll-content">
+            <div class="z-dining-canvas">
+                <div class="z-dining-overlay"></div>
+                <div class="z-dining-text">
+                    <h3 class="z-brand-3d">DINING CARNIVAL</h3>
+                    <p>Extra ₹175 OFF on first booking</p>
                 </div>
             </div>
             
-            <div class="booking-section">
-                <h4 class="section-title">Booking Details</h4>
-                <div class="booking-card">
-                    <label>Number of Guests</label>
-                    <div class="guest-counter">
+            <div class="z-dining-body">
+                <h4 class="z-section-title">Reserve a Table</h4>
+                <div class="z-card">
+                    <label class="z-label">Number of Guests</label>
+                    <div class="z-counter-box">
                         <button onclick="updateGuests(-1)">-</button>
                         <span id="guest-count">2 Guests</span>
                         <button onclick="updateGuests(1)">+</button>
                     </div>
                     
-                    <label class="mt-15">Time Slot</label>
-                    <input type="time" class="custom-input mt-5" value="19:30">
+                    <label class="z-label mt-15">Select Time Slot</label>
+                    <input type="time" class="z-input mt-5" value="19:30">
                     
-                    <button class="gold-gradient-btn mt-20" onclick="showToast('Table Request Sent to Kavya Admin!')">Confirm Reservation</button>
+                    <button class="z-gold-btn mt-20" onclick="showToast('Table Request Sent to Kavya Admin!')">Confirm Reservation</button>
                 </div>
             </div>
         </div>
@@ -171,66 +160,55 @@
     <!-- ==========================================
          PAGE 3: CART & CHECKOUT
          ========================================== -->
-    <div id="cart-page" class="app-page right-slide-page">
-        <header class="dark-header">
-            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('cart-page')"></i>
-            <h2>Checkout</h2>
+    <div id="cart-page" class="z-page right-slide-page">
+        <header class="z-sub-header">
+            <i class="fa-solid fa-arrow-left z-back" onclick="closePage('cart-page')"></i>
+            <h2>Secure Checkout</h2>
             <div style="width: 24px;"></div>
         </header>
         
-        <div class="page-scroll-content p-20">
-            <!-- Delivery Estimate -->
-            <div class="delivery-estimate-card">
-                <i class="fa-solid fa-clock-rotate-left text-green"></i>
-                <div class="estimate-text">
-                    <strong>Delivery in 30-40 mins</strong>
-                    <span>Food is freshly prepared after order.</span>
-                </div>
-            </div>
-
-            <div id="cart-items-container">
-                <!-- JS Will Inject Cart Items & Billing Here -->
-            </div>
+        <div class="z-scroll-content p-20" id="cart-items-container">
+            <!-- Injected via JS -->
         </div>
     </div>
 
 
     <!-- ==========================================
-         PAGE 4: LOGIN / VIP PROFILE
+         PAGE 4: VIP PROFILE & AUTH
          ========================================== -->
-    <div id="login-page" class="app-page right-slide-page">
-        <header class="dark-header">
-            <i class="fa-solid fa-arrow-left back-btn" onclick="closePage('login-page')"></i>
-            <h2>VIP Access</h2>
+    <div id="login-page" class="z-page right-slide-page">
+        <header class="z-sub-header">
+            <i class="fa-solid fa-arrow-left z-back" onclick="closePage('login-page')"></i>
+            <h2>VIP Portal</h2>
             <div style="width: 24px;"></div>
         </header>
         
-        <div class="page-scroll-content p-20" id="auth-container">
-            <!-- JS Will Inject Login Form or Profile Dashboard Here -->
+        <div class="z-scroll-content p-20" id="auth-container">
+            <!-- Injected via JS -->
         </div>
     </div>
 
 
     <!-- ==========================================
-         BOTTOM TASKBAR (Apple Style)
+         ZOMATO BOTTOM TASKBAR
          ========================================== -->
-    <nav class="bottom-taskbar" id="smart-taskbar">
-        <div class="nav-item active" onclick="openPage('home-page')">
+    <nav class="z-taskbar">
+        <div class="z-nav-item active" onclick="openPage('home-page')">
             <i class="fa-solid fa-house"></i>
             <span>Delivery</span>
         </div>
-        <div class="nav-item" onclick="openPage('dining-page')">
+        <div class="z-nav-item" onclick="openPage('dining-page')">
             <i class="fa-solid fa-bell-concierge"></i>
             <span>Dining</span>
         </div>
-        <div class="nav-item cart-nav" onclick="openPage('cart-page')">
+        <div class="z-nav-item z-cart-tab" onclick="openPage('cart-page')">
             <i class="fa-solid fa-cart-shopping"></i>
             <span>Cart</span>
-            <div class="cart-badge hidden" id="nav-cart-count">0</div>
+            <div class="z-badge hidden" id="nav-cart-count">0</div>
         </div>
     </nav>
 
-    <!-- Scripts (Modular) -->
+    <!-- Modular Scripts -->
     <script src="data.js"></script>
     <script src="ui.js"></script>
     <script src="app.js"></script>
