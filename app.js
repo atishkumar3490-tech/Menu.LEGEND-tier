@@ -39,10 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if(hours < 12) greeting = `Good Morning${loggedInUser ? ', '+loggedInUser : ''}! Perfect time for Breakfast.`;
     else if(hours < 16) greeting = `Hungry${loggedInUser ? ', '+loggedInUser : ''}? Grab a VIP Lunch!`;
     else greeting = `Rough day${loggedInUser ? ', '+loggedInUser : ''}? Your Comfort Dinner is ready.`;
-    document.getElementById('dynamic-greeting').innerText = greeting;
+    const greetEl = document.getElementById('dynamic-greeting');
+    if(greetEl) greetEl.innerText = greeting;
 
     // 4. Update Profile Pic everywhere
-    document.getElementById('nav-profile-pic').src = userProfilePic;
+    const navPic = document.getElementById('nav-profile-pic');
+    if(navPic) navPic.src = userProfilePic;
 
     renderAuthPage();
     renderMenu();
@@ -89,6 +91,8 @@ function requestLocation() {
 // --- PROFILE & AUTH ---
 function renderAuthPage() {
     const container = document.getElementById('login-form-container');
+    if(!container) return;
+    
     if(loggedInUser) {
         const progress = Math.min((userCoins / 500) * 100, 100);
         container.innerHTML = `
@@ -127,11 +131,12 @@ function saveUserLogin() {
     const name = document.getElementById('user-name').value;
     const phone = document.getElementById('user-phone').value;
     if(name.trim() === "" || phone.length !== 10) return showToast("Enter valid Name & Mobile.", "error");
-    loggedInUser = name; userPhone = phone; userCoins = 50;
+    loggedInUser = name; userPhone = phone; 
+    if(!localStorage.getItem('kavya_coins')) { userCoins = 50; localStorage.setItem('kavya_coins', userCoins); }
     localStorage.setItem('kavya_user_name', name); localStorage.setItem('kavya_user_phone', phone);
-    if(!localStorage.getItem('kavya_coins')) localStorage.setItem('kavya_coins', userCoins);
+    
     renderAuthPage(); showToast(`Welcome ${name}!`); closePage('login-page');
-    setTimeout(() => location.reload(), 1000); // Reload to update greetings
+    setTimeout(() => location.reload(), 1000); 
 }
 
 function logoutUser() { if(confirm("Logout from Kavya VIP?")) { localStorage.clear(); location.reload(); } }
@@ -144,7 +149,8 @@ function uploadProfilePic(event) {
             userProfilePic = e.target.result;
             localStorage.setItem('kavya_profile_pic', userProfilePic);
             document.getElementById('dashboard-pic').src = userProfilePic;
-            document.getElementById('nav-profile-pic').src = userProfilePic;
+            const navPic = document.getElementById('nav-profile-pic');
+            if(navPic) navPic.src = userProfilePic;
             showToast("Profile Picture Updated!");
         };
         reader.readAsDataURL(file);
@@ -159,8 +165,10 @@ function setCategory(cat, el) {
 }
 
 function filterMenu() {
-    const search = document.querySelector('.search-input').value.toLowerCase();
+    const searchInp = document.querySelector('.search-input');
+    const search = searchInp ? searchInp.value.toLowerCase() : '';
     const container = document.getElementById('menu-items');
+    if(!container) return;
     container.innerHTML = ''; 
     const filtered = menuItems.filter(i => (currentCategory === 'All' || i.category === currentCategory) && i.name.toLowerCase().includes(search));
     
@@ -201,14 +209,17 @@ function setSpice(el, level) {
     currentSpice = level;
 }
 
-document.getElementById('confirm-flavor-btn').addEventListener('click', () => {
-    document.getElementById('flavor-slider-modal').classList.add('hidden');
-    const item = menuItems.find(i => i.id === selectedItemIdForFlavor);
-    cart.push({ ...item, quantity: 1, spice: currentSpice }); 
-    updateCartUI(); filterMenu(); showToast(`Added to Cart (${currentSpice})`); 
-});
+const confirmFlavorBtn = document.getElementById('confirm-flavor-btn');
+if(confirmFlavorBtn) {
+    confirmFlavorBtn.addEventListener('click', () => {
+        document.getElementById('flavor-slider-modal').classList.add('hidden');
+        const item = menuItems.find(i => i.id === selectedItemIdForFlavor);
+        cart.push({ ...item, quantity: 1, spice: currentSpice }); 
+        updateCartUI(); filterMenu(); showToast(`Added to Cart (${currentSpice})`); 
+    });
+}
 
-// --- CART & CHECKOUT ---
+// --- CART, BILLING & COIN REDEMPTION ---
 function updateQty(id, amt) { 
     const idx = cart.findIndex(i => i.id === id); 
     if(idx > -1) { cart[idx].quantity += amt; if(cart[idx].quantity <= 0) cart.splice(idx, 1); } 
@@ -226,17 +237,19 @@ function updateCartUI() {
 }
 
 function renderCartSheet() {
-    const c = document.getElementById('cart-items-container'); c.innerHTML = '';
+    const c = document.getElementById('cart-items-container'); 
+    if(!c) return;
+    c.innerHTML = '';
     let subtotal = 0;
     
-    // Delivery Address Bar
+    // Delivery Address
     c.innerHTML += `
         <h4 style="color:#fff; margin-bottom:10px;">Delivery Address</h4>
         <input type="text" id="cart-address" class="custom-input" placeholder="Enter Full Address..." value="${userAddress}" onchange="localStorage.setItem('kavya_address', this.value); userAddress=this.value;">
         <h4 style="color:#fff; margin:20px 0 10px;">Your Items</h4>
     `;
 
-    // Cart Items with Thumbnails
+    // Items List
     cart.forEach(i => { 
         subtotal += (i.price * i.quantity);
         const vegColor = i.veg ? 'var(--veg-green)' : 'var(--nonveg-red)';
@@ -248,19 +261,28 @@ function renderCartSheet() {
                     <div style="width:10px; height:10px; border:1px solid ${vegColor}; display:flex; justify-content:center; align-items:center; border-radius:2px;"><div style="width:4px; height:4px; border-radius:50%; background:${vegColor};"></div></div>
                     <span style="font-size:13px; color:#fff; font-weight:600;">${i.name}</span>
                 </div>
-                <div style="font-size:11px; color:#888;">Spice: ${i.spice}</div>
+                <div style="font-size:11px; color:#888;">Spice: ${i.spice || 'Mild'}</div>
                 <div style="color:#fff; font-weight:800; font-size:14px; margin-top:5px;">₹${i.price * i.quantity}</div>
             </div>
             <div class="qty-btn-group"><button onclick="updateQty('${i.id}', -1)">-</button><div style="color:#fff; font-size:14px; font-weight:800;">${i.quantity}</div><button onclick="updateQty('${i.id}', 1)">+</button></div>
         </div>`; 
     });
 
-    // Bill Breakdown & Payment Buttons
+    // Bill & Kavya Coin Checkbox
     c.innerHTML += `
         <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:10px;"><span>Subtotal</span><span>₹${subtotal}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:10px;"><span>Subtotal</span><span>₹<span id="bill-subtotal">${subtotal}</span></span></div>
             <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:10px;"><span>Delivery Fee</span><span>₹30</span></div>
-            <div style="display:flex; justify-content:space-between; color:#fff; font-size:18px; font-weight:900; margin-top:15px; border-top:1px dashed #444; padding-top:15px;"><span>Grand Total</span><span style="color:var(--accent-neon);">₹${subtotal + 30}</span></div>
+            
+            <div style="margin:15px 0; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="coins-check" onchange="calculateFinalBill()" style="width:16px; height:16px; accent-color: var(--liquid-gold);">
+                    <label style="font-size:12px; color:var(--liquid-gold); font-weight:600;">Use Kavya Coins (Bal: ${userCoins})</label>
+                </div>
+                <span id="coin-discount-display" class="hidden" style="color:var(--veg-green); font-size:12px; font-weight:800;">-₹0</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; color:#fff; font-size:18px; font-weight:900; margin-top:15px; border-top:1px dashed #444; padding-top:15px;"><span>Grand Total</span><span style="color:var(--accent-neon);">₹<span id="bill-total">${subtotal + 30}</span></span></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:25px;">
             <button style="flex:1; background:#222; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-weight:800;" onclick="placeOrderFinal('COD')">Pay on Delivery</button>
@@ -268,21 +290,57 @@ function renderCartSheet() {
         </div>`;
 }
 
+// Logic to minus coin discount instantly on cart screen
+function calculateFinalBill() {
+    let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let discount = 0;
+    const useCoinsCheckbox = document.getElementById('coins-check');
+    const discountDisplay = document.getElementById('coin-discount-display');
+
+    if(useCoinsCheckbox && useCoinsCheckbox.checked) {
+        let maxAllowed = Math.floor(subtotal * 0.10); // Up to 10% of subtotal can be paid by coins
+        discount = Math.min(userCoins, maxAllowed);
+        
+        if(discount === 0) {
+            showToast("Not enough coins to apply.", "error");
+            useCoinsCheckbox.checked = false;
+        } else {
+            discountDisplay.innerText = `-₹${discount}`;
+            discountDisplay.classList.remove('hidden');
+        }
+    } else {
+        discountDisplay.classList.add('hidden');
+    }
+
+    const finalTotal = subtotal + 30 - discount;
+    document.getElementById('bill-total').innerText = finalTotal;
+}
+
 function placeOrderFinal(method) {
-    if(document.getElementById('cart-address').value.trim() === "") return showToast("Address is required!", "error");
+    if(document.getElementById('cart-address').value.trim() === "") return showToast("Delivery Address is required!", "error");
     
+    // Deduct coins if user checked the box
+    let discount = 0;
+    const useCoinsCheckbox = document.getElementById('coins-check');
+    if(useCoinsCheckbox && useCoinsCheckbox.checked) {
+        let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        discount = Math.min(userCoins, Math.floor(subtotal * 0.10));
+        userCoins -= discount; // Deduct used coins from balance
+    }
+
     closePage('cart-page');
     cart = []; updateCartUI(); filterMenu();
     
-    // Kavya Coin Gamification
+    // Earn New Coins for this order
     const earned = Math.floor(Math.random() * 30) + 10; 
     userCoins += earned;
     localStorage.setItem('kavya_coins', userCoins);
     
+    // Show 3D Celebration Popup
     document.getElementById('earned-coins').innerText = earned;
     document.getElementById('coin-celebration').classList.remove('hidden');
     
-    setTimeout(() => { renderAuthPage(); }, 2000); // Update dashboard behind the scenes
+    setTimeout(() => { renderAuthPage(); }, 2000); 
 }
 
 // Top Header Scroll Effect
