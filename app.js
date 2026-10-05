@@ -1,68 +1,39 @@
-// --- GLOBAL DATA & STATE ---
-let cart = [];
-let loggedInUser = localStorage.getItem('kavya_user_name');
+/* =========================================
+   APP.JS - Core Logic & State Management
+   ========================================= */
+
+// --- STATE ---
+window.loggedInUser = localStorage.getItem('kavya_user_name');
 let userPhone = localStorage.getItem('kavya_user_phone');
 let userCoins = parseInt(localStorage.getItem('kavya_coins') || 0);
 let userAddress = localStorage.getItem('kavya_address') || "";
-let userProfilePic = localStorage.getItem('kavya_profile_pic') || "https://via.placeholder.com/150/111/888?text=VIP";
-let currentCategory = 'All'; 
-let selectedItemIdForFlavor = null;
-let currentSpice = 'Mild';
+let userProfilePic = localStorage.getItem('kavya_profile_pic') || "https://via.placeholder.com/150/222/fff?text=VIP";
+let orderHistory = JSON.parse(localStorage.getItem('kavya_orders') || '[]');
 
-// Real HD Wide Images for Menu
-const menuItems = [
-    { id: 'b1', category: 'Biryani', name: 'Nawabi Chicken Biryani', price: 299, veg: false, meta: '⚡ 20-25 mins | 1.2 km', img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=1000&q=80' },
-    { id: 'cu1', category: 'Curries', name: 'Shiva Chhappan Bhog (Chole Bhature)', price: 190, veg: true, meta: '⚡ 15-20 mins | 0.8 km', img: 'https://images.unsplash.com/photo-1544148103-0773bf10d330?w=1000&q=80' },
-    { id: 'c1', category: 'Curries', name: 'Paneer Butter Masala', price: 249, veg: true, meta: '⚡ 25-30 mins | 1.5 km', img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=1000&q=80' },
-    { id: 'r1', category: 'Rolls', name: 'Double Egg Chicken Roll', price: 120, veg: false, meta: '⚡ 10-15 mins | 0.5 km', img: 'https://images.unsplash.com/photo-1549110781-79b88f343f7a?w=1000&q=80' },
-    { id: 'sw1', category: 'Sweets', name: 'Hot Gulab Jamun', price: 60, veg: true, meta: '⚡ 10-15 mins | 0.5 km', img: 'https://images.unsplash.com/photo-1596450514735-3b9ffef74c43?w=1000&q=80' }
-];
+let cart = [];
+let currentCategory = 'All';
+let selectedFlavorId = null;
+let currentSpice = 'Mild';
+let tableGuests = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Splash Screen
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 500); }
-    }, 1500);
-
-    // 2. Rotating Search Text
-    const placeholders = ['Search "Biryani"...', 'Search "Chole Bhature"...', 'Search "Paneer"...', 'Craving Sweets?'];
-    let pIdx = 0;
-    setInterval(() => {
-        document.querySelectorAll('.search-input-rotate').forEach(inp => inp.placeholder = placeholders[pIdx]);
-        pIdx = (pIdx + 1) % placeholders.length;
-    }, 2500);
-
-    // 3. Bespoke Greeting Logic (Time based)
-    const hours = new Date().getHours();
-    let greeting = "Ready for a treat?";
-    if(hours < 12) greeting = `Good Morning${loggedInUser ? ', '+loggedInUser : ''}! Perfect time for Breakfast.`;
-    else if(hours < 16) greeting = `Hungry${loggedInUser ? ', '+loggedInUser : ''}? Grab a VIP Lunch!`;
-    else greeting = `Rough day${loggedInUser ? ', '+loggedInUser : ''}? Your Comfort Dinner is ready.`;
-    const greetEl = document.getElementById('dynamic-greeting');
-    if(greetEl) greetEl.innerText = greeting;
-
-    // 4. Update Profile Pic everywhere
-    const navPic = document.getElementById('nav-profile-pic');
-    if(navPic) navPic.src = userProfilePic;
-
-    renderAuthPage();
+    initUI(); // From ui.js
+    
+    if(window.loggedInUser) {
+        document.getElementById('nav-profile-pic').src = userProfilePic;
+        document.getElementById('top-coin-bal').innerText = userCoins;
+    }
+    
     renderMenu();
-    updateCartUI();
+    updateCartBadge();
+    renderAuthPage();
 });
 
-// --- CORE FUNCTIONS ---
-function showToast(message, type="success") {
-    const toast = document.getElementById('toast-container');
-    document.getElementById('toast-message').innerHTML = type === "error" ? `⚠️ ${message}` : `✅ ${message}`;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
+// --- NAVIGATION ---
 function openPage(pageId) {
     if(pageId === 'cart-page') {
-        if(!loggedInUser) { showToast("Login Required for Checkout!", "error"); return openPage('login-page'); }
-        if(cart.length === 0) return showToast("Cart is empty!", "error");
+        if(!window.loggedInUser) return showToast("Login Required for Checkout!", "error");
+        if(cart.length === 0) return showToast("Your Cart is empty!", "error");
         renderCartSheet();
     }
     const page = document.getElementById(pageId);
@@ -76,131 +47,80 @@ function closePage(pageId) {
 
 // --- GPS LOCATION ---
 function requestLocation() {
+    if(!window.loggedInUser) {
+        showToast("Please login first to setup location.", "error");
+        return openPage('login-page');
+    }
     const locText = document.getElementById('user-location');
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 showToast("GPS Location Captured!");
-                if(locText) locText.innerHTML = `Live Location Set <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>`;
+                if(locText) locText.innerHTML = `Location Set <i class="fa-solid fa-chevron-down text-xs"></i>`;
             },
-            (error) => { showToast("Location Denied. Using Default.", "error"); }
+            (error) => { showToast("Location Denied. Please enter manually.", "error"); }
         );
     }
 }
 
-// --- PROFILE & AUTH ---
-function renderAuthPage() {
-    const container = document.getElementById('login-form-container');
-    if(!container) return;
-    
-    if(loggedInUser) {
-        const progress = Math.min((userCoins / 500) * 100, 100);
-        container.innerHTML = `
-            <div style="text-align:center;">
-                <div class="profile-upload-wrapper">
-                    <img id="dashboard-pic" src="${userProfilePic}">
-                    <div class="edit-badge" onclick="document.getElementById('pic-upload').click()"><i class="fa-solid fa-camera"></i></div>
-                    <input type="file" id="pic-upload" accept="image/*" hidden onchange="uploadProfilePic(event)">
-                </div>
-                <h3 style="color:#fff; margin-top:10px;">${loggedInUser}</h3>
-                <p style="color:#888; font-size:12px;">+91 ${userPhone}</p>
-                
-                <div style="background:#111; border:1px solid #333; border-radius:15px; padding:20px; margin:20px 0; text-align:left;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h4 style="color:var(--liquid-gold); margin:0;"><i class="fa-solid fa-coins"></i> Kavya Coins</h4>
-                        <span style="font-size:22px; color:var(--accent-neon); font-weight:800;">${userCoins}</span>
-                    </div>
-                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
-                    <p style="font-size:11px; color:#888; margin-top:5px;">Reach 500 Coins for a FREE Biryani!</p>
-                </div>
-                <button class="primary-btn" style="background:#222; color:#fff; border:1px solid #444;" onclick="logoutUser()">Logout</button>
-            </div>`;
-    } else {
-        container.innerHTML = `
-            <div style="text-align:center; margin-bottom: 30px;">
-                <h1 style="color: var(--liquid-gold); font-size: 35px; font-weight: 900; margin: 0;">KAVYA</h1>
-                <p style="color: var(--accent-neon); letter-spacing: 2px; font-size: 12px;">LOGIN REQUIRED</p>
-            </div>
-            <input type="text" id="user-name" class="custom-input" placeholder="Full Name (Required)">
-            <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile (Required)" maxlength="10">
-            <button class="primary-btn" onclick="saveUserLogin()">Continue Securely</button>`;
-    }
+// --- MENU & FLAVOR FILTERING ---
+function setCategory(catId, el) {
+    currentCategory = catId;
+    document.querySelectorAll('.category-item').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
+    renderMenu();
 }
 
-function saveUserLogin() {
-    const name = document.getElementById('user-name').value;
-    const phone = document.getElementById('user-phone').value;
-    if(name.trim() === "" || phone.length !== 10) return showToast("Enter valid Name & Mobile.", "error");
-    loggedInUser = name; userPhone = phone; 
-    if(!localStorage.getItem('kavya_coins')) { userCoins = 50; localStorage.setItem('kavya_coins', userCoins); }
-    localStorage.setItem('kavya_user_name', name); localStorage.setItem('kavya_user_phone', phone);
-    
-    renderAuthPage(); showToast(`Welcome ${name}!`); closePage('login-page');
-    setTimeout(() => location.reload(), 1000); 
-}
+function filterMenu() { renderMenu(); }
 
-function logoutUser() { if(confirm("Logout from Kavya VIP?")) { localStorage.clear(); location.reload(); } }
+function renderMenu() {
+    const search = document.getElementById('main-search').value.toLowerCase();
+    const container = document.getElementById('menu-items-container');
+    container.innerHTML = '';
 
-function uploadProfilePic(event) {
-    const file = event.target.files[0];
-    if(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            userProfilePic = e.target.result;
-            localStorage.setItem('kavya_profile_pic', userProfilePic);
-            document.getElementById('dashboard-pic').src = userProfilePic;
-            const navPic = document.getElementById('nav-profile-pic');
-            if(navPic) navPic.src = userProfilePic;
-            showToast("Profile Picture Updated!");
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-// --- MENU & FLAVOR SLIDER ---
-function setCategory(cat, el) {
-    currentCategory = cat;
-    document.querySelectorAll('.category-item').forEach(e => e.classList.remove('active'));
-    el.classList.add('active'); filterMenu();
-}
-
-function filterMenu() {
-    const searchInp = document.querySelector('.search-input');
-    const search = searchInp ? searchInp.value.toLowerCase() : '';
-    const container = document.getElementById('menu-items');
-    if(!container) return;
-    container.innerHTML = ''; 
     const filtered = menuItems.filter(i => (currentCategory === 'All' || i.category === currentCategory) && i.name.toLowerCase().includes(search));
     
-    if(filtered.length === 0) { container.innerHTML = `<div style="text-align:center; padding:40px; color:#888;">No dishes found.</div>`; return; }
+    if(filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:50px 20px; color:#888;">No dishes found matching your criteria.</div>`;
+        return;
+    }
 
     filtered.forEach(item => {
         const cItem = cart.find(i => i.id === item.id);
-        const vegColor = item.veg ? 'var(--veg-green)' : 'var(--nonveg-red)';
-        const btn = cItem 
-            ? `<div class="qty-btn-group"><button onclick="updateQty('${item.id}', -1)">-</button><div style="color:#fff; font-size:14px; font-weight:800;">${cItem.quantity}</div><button onclick="updateQty('${item.id}', 1)">+</button></div>`
-            : `<button style="background:rgba(226,55,68,0.1); color:var(--zomato-red); border:1px solid var(--zomato-red); padding:8px 25px; border-radius:8px; font-weight:800; font-size:14px;" onclick="openFlavorSlider('${item.id}')">ADD</button>`;
+        const vegClass = item.veg ? 'text-green' : 'text-red';
+        const vegBg = item.veg ? 'var(--veg-green)' : 'var(--nonveg-red)';
+        
+        const btnHtml = cItem 
+            ? `<div class="qty-control"><button onclick="updateQty('${item.id}', -1)">-</button><span style="color:#fff; font-weight:800;">${cItem.quantity}</span><button onclick="updateQty('${item.id}', 1)">+</button></div>`
+            : `<button class="add-btn" onclick="openFlavorSelector('${item.id}')">ADD</button>`;
 
         container.innerHTML += `
         <div class="wide-food-card">
-            <div class="wide-img-box"><img src="${item.img}" loading="lazy"><div class="bookmark-icon"><i class="fa-regular fa-bookmark"></i></div></div>
+            <div class="wide-img-box">
+                <img src="${item.img}" loading="lazy" alt="${item.name}">
+                <div class="bookmark-icon" onclick="toggleBookmark(this)"><i class="fa-regular fa-bookmark"></i></div>
+            </div>
             <div class="wide-info">
-                <div style="width: 65%;">
-                    <div style="width:14px; height:14px; border:1px solid ${vegColor}; display:flex; justify-content:center; align-items:center; margin-bottom:8px; border-radius:3px;"><div style="width:6px; height:6px; border-radius:50%; background:${vegColor};"></div></div>
-                    <h3>${item.name}</h3>
-                    <div class="meta-text">${item.meta}</div>
-                    <div class="price-text">₹${item.price}</div>
+                <div class="food-title-col">
+                    <div class="veg-tag" style="border: 1px solid ${vegBg}"><div class="veg-tag-inner" style="background:${vegBg}"></div></div>
+                    <h3 class="food-name">${item.name}</h3>
+                    <div class="text-xs text-muted font-weight-600">${item.meta}</div>
+                    <div class="food-price">₹${item.price}</div>
                 </div>
-                <div>${btn}</div>
+                <div>${btnHtml}</div>
             </div>
         </div>`;
     });
 }
 
-function openFlavorSlider(id) {
-    if(!loggedInUser) { showToast("Login Required to Add Items!", "error"); return openPage('login-page'); }
-    selectedItemIdForFlavor = id;
-    document.getElementById('flavor-slider-modal').classList.remove('hidden');
+// --- FLAVOR SLIDER LOGIC ---
+function openFlavorSelector(id) {
+    if(!window.loggedInUser) {
+        showToast("Login Required to Add Items!", "error");
+        return openPage('login-page');
+    }
+    selectedFlavorId = id;
+    openPopup('flavor-slider-modal');
 }
 
 function setSpice(el, level) {
@@ -209,142 +129,221 @@ function setSpice(el, level) {
     currentSpice = level;
 }
 
-const confirmFlavorBtn = document.getElementById('confirm-flavor-btn');
-if(confirmFlavorBtn) {
-    confirmFlavorBtn.addEventListener('click', () => {
-        document.getElementById('flavor-slider-modal').classList.add('hidden');
-        const item = menuItems.find(i => i.id === selectedItemIdForFlavor);
-        cart.push({ ...item, quantity: 1, spice: currentSpice }); 
-        updateCartUI(); filterMenu(); showToast(`Added to Cart (${currentSpice})`); 
-    });
+document.getElementById('confirm-flavor-btn').addEventListener('click', () => {
+    closePopup('flavor-slider-modal');
+    const item = menuItems.find(i => i.id === selectedFlavorId);
+    cart.push({ ...item, quantity: 1, spice: currentSpice });
+    updateCartBadge(); renderMenu();
+    showToast(`Added to Cart (${currentSpice})`);
+});
+
+// --- CART & BILLING ---
+function updateQty(id, amt) {
+    const idx = cart.findIndex(i => i.id === id);
+    if(idx > -1) {
+        cart[idx].quantity += amt;
+        if(cart[idx].quantity <= 0) cart.splice(idx, 1);
+    }
+    updateCartBadge(); renderMenu();
+    if(document.getElementById('cart-page').classList.contains('open')) renderCartSheet();
 }
 
-// --- CART, BILLING & COIN REDEMPTION ---
-function updateQty(id, amt) { 
-    const idx = cart.findIndex(i => i.id === id); 
-    if(idx > -1) { cart[idx].quantity += amt; if(cart[idx].quantity <= 0) cart.splice(idx, 1); } 
-    updateCartUI(); filterMenu(); 
-    if(document.getElementById('cart-page').classList.contains('open')) renderCartSheet(); 
-}
-
-function updateCartUI() {
+function updateCartBadge() {
     let total = cart.reduce((sum, item) => sum + item.quantity, 0);
     const badge = document.getElementById('nav-cart-count');
-    if(badge) {
-        if(total > 0) { badge.classList.remove('hidden'); badge.innerText = total; document.querySelector('.cart-nav i').style.color = 'var(--zomato-red)'; } 
-        else { badge.classList.add('hidden'); document.querySelector('.cart-nav i').style.color = '#888'; closePage('cart-page'); }
+    if(total > 0) {
+        badge.classList.remove('hidden'); badge.innerText = total;
+        document.querySelector('.cart-nav i').style.color = 'var(--zomato-red)';
+    } else {
+        badge.classList.add('hidden');
+        document.querySelector('.cart-nav i').style.color = 'var(--text-muted)';
+        closePage('cart-page');
     }
 }
 
 function renderCartSheet() {
-    const c = document.getElementById('cart-items-container'); 
-    if(!c) return;
+    const c = document.getElementById('cart-items-container');
     c.innerHTML = '';
     let subtotal = 0;
-    
-    // Delivery Address
+
+    // Delivery Address Bar
     c.innerHTML += `
-        <h4 style="color:#fff; margin-bottom:10px;">Delivery Address</h4>
-        <input type="text" id="cart-address" class="custom-input" placeholder="Enter Full Address..." value="${userAddress}" onchange="localStorage.setItem('kavya_address', this.value); userAddress=this.value;">
-        <h4 style="color:#fff; margin:20px 0 10px;">Your Items</h4>
+        <div style="background:#111; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #222;">
+            <label style="color:#888; font-size:12px;">Delivery Address (Required)</label>
+            <textarea id="cart-address" class="custom-input mt-5" rows="2" placeholder="Enter Full Address...">${userAddress}</textarea>
+        </div>
+        <h4 style="color:#fff; margin-bottom:15px;">Your Order</h4>
     `;
 
-    // Items List
-    cart.forEach(i => { 
+    cart.forEach(i => {
         subtotal += (i.price * i.quantity);
-        const vegColor = i.veg ? 'var(--veg-green)' : 'var(--nonveg-red)';
         c.innerHTML += `
-        <div class="cart-item-row">
-            <img src="${i.img}" class="cart-thumb">
-            <div class="cart-item-info">
-                <div style="display:flex; align-items:center; gap:5px; margin-bottom:3px;">
-                    <div style="width:10px; height:10px; border:1px solid ${vegColor}; display:flex; justify-content:center; align-items:center; border-radius:2px;"><div style="width:4px; height:4px; border-radius:50%; background:${vegColor};"></div></div>
-                    <span style="font-size:13px; color:#fff; font-weight:600;">${i.name}</span>
-                </div>
-                <div style="font-size:11px; color:#888;">Spice: ${i.spice || 'Mild'}</div>
-                <div style="color:#fff; font-weight:800; font-size:14px; margin-top:5px;">₹${i.price * i.quantity}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #222;">
+            <div style="width: 50%;">
+                <div style="font-size:14px; color:#fff; font-weight:700;">${i.name}</div>
+                <div style="font-size:11px; color:#888;">Spice: ${i.spice}</div>
+                <div style="font-size:15px; color:#fff; font-weight:800; margin-top:5px;">₹${i.price * i.quantity}</div>
             </div>
-            <div class="qty-btn-group"><button onclick="updateQty('${i.id}', -1)">-</button><div style="color:#fff; font-size:14px; font-weight:800;">${i.quantity}</div><button onclick="updateQty('${i.id}', 1)">+</button></div>
-        </div>`; 
+            <div class="qty-control"><button onclick="updateQty('${i.id}', -1)">-</button><span style="color:#fff; font-weight:800;">${i.quantity}</span><button onclick="updateQty('${i.id}', 1)">+</button></div>
+        </div>`;
     });
 
-    // Bill & Kavya Coin Checkbox
+    // Bill & Coins
     c.innerHTML += `
-        <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:10px;"><span>Subtotal</span><span>₹<span id="bill-subtotal">${subtotal}</span></span></div>
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:10px;"><span>Delivery Fee</span><span>₹30</span></div>
+        <div style="background:#111; padding:20px; border-radius:12px; margin-top:20px; border:1px solid #222;">
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:10px;"><span>Subtotal</span><span>₹${subtotal}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:15px;"><span>Delivery Fee</span><span>₹30</span></div>
             
-            <div style="margin:15px 0; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="background: rgba(212,175,55,0.05); border: 1px dashed var(--liquid-gold); padding: 12px; border-radius: 10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" id="coins-check" onchange="calculateFinalBill()" style="width:16px; height:16px; accent-color: var(--liquid-gold);">
-                    <label style="font-size:12px; color:var(--liquid-gold); font-weight:600;">Use Kavya Coins (Bal: ${userCoins})</label>
+                    <input type="checkbox" id="coins-check" onchange="calculateBill()" style="width:18px; height:18px; accent-color: var(--liquid-gold);">
+                    <label style="font-size:12px; color:var(--liquid-gold); font-weight:700;">Use Coins (Bal: ${userCoins})</label>
                 </div>
-                <span id="coin-discount-display" class="hidden" style="color:var(--veg-green); font-size:12px; font-weight:800;">-₹0</span>
+                <span id="coin-discount" class="hidden" style="color:var(--veg-green); font-size:13px; font-weight:800;">-₹0</span>
             </div>
 
-            <div style="display:flex; justify-content:space-between; color:#fff; font-size:18px; font-weight:900; margin-top:15px; border-top:1px dashed #444; padding-top:15px;"><span>Grand Total</span><span style="color:var(--accent-neon);">₹<span id="bill-total">${subtotal + 30}</span></span></div>
+            <div style="display:flex; justify-content:space-between; color:#fff; font-size:18px; font-weight:900; border-top:1px dashed #444; padding-top:15px;">
+                <span>Grand Total</span><span style="color:var(--accent-neon);">₹<span id="bill-total">${subtotal + 30}</span></span>
+            </div>
         </div>
+
         <div style="display:flex; gap:10px; margin-top:25px;">
-            <button style="flex:1; background:#222; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-weight:800;" onclick="placeOrderFinal('COD')">Pay on Delivery</button>
-            <button style="flex:1.5; background:var(--zomato-red); color:#fff; border:none; padding:15px; border-radius:8px; font-weight:900;" onclick="placeOrderFinal('UPI')">Pay via UPI <i class="fa-solid fa-bolt"></i></button>
-        </div>`;
+            <button style="flex:1; background:#222; color:#fff; border:1px solid #444; padding:15px; border-radius:12px; font-weight:800;" onclick="placeOrder('COD')">COD</button>
+            <button style="flex:1.5; background:var(--zomato-red); color:#fff; border:none; padding:15px; border-radius:12px; font-weight:900;" onclick="placeOrder('UPI')">Pay via UPI <i class="fa-solid fa-bolt"></i></button>
+        </div>
+    `;
 }
 
-// Logic to minus coin discount instantly on cart screen
-function calculateFinalBill() {
+function calculateBill() {
     let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     let discount = 0;
-    const useCoinsCheckbox = document.getElementById('coins-check');
-    const discountDisplay = document.getElementById('coin-discount-display');
+    const chk = document.getElementById('coins-check');
+    const discEl = document.getElementById('coin-discount');
 
-    if(useCoinsCheckbox && useCoinsCheckbox.checked) {
-        let maxAllowed = Math.floor(subtotal * 0.10); // Up to 10% of subtotal can be paid by coins
-        discount = Math.min(userCoins, maxAllowed);
-        
-        if(discount === 0) {
-            showToast("Not enough coins to apply.", "error");
-            useCoinsCheckbox.checked = false;
-        } else {
-            discountDisplay.innerText = `-₹${discount}`;
-            discountDisplay.classList.remove('hidden');
-        }
+    if(chk && chk.checked) {
+        discount = Math.min(userCoins, Math.floor(subtotal * 0.10));
+        if(discount === 0) { showToast("Not enough coins.", "error"); chk.checked = false; }
+        else { discEl.innerText = `-₹${discount}`; discEl.classList.remove('hidden'); }
     } else {
-        discountDisplay.classList.add('hidden');
+        discEl.classList.add('hidden');
     }
-
-    const finalTotal = subtotal + 30 - discount;
-    document.getElementById('bill-total').innerText = finalTotal;
+    document.getElementById('bill-total').innerText = subtotal + 30 - discount;
 }
 
-function placeOrderFinal(method) {
-    if(document.getElementById('cart-address').value.trim() === "") return showToast("Delivery Address is required!", "error");
+function placeOrder(method) {
+    const add = document.getElementById('cart-address').value;
+    if(add.trim() === "") return showToast("Address is required!", "error");
     
-    // Deduct coins if user checked the box
-    let discount = 0;
-    const useCoinsCheckbox = document.getElementById('coins-check');
-    if(useCoinsCheckbox && useCoinsCheckbox.checked) {
-        let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        discount = Math.min(userCoins, Math.floor(subtotal * 0.10));
-        userCoins -= discount; // Deduct used coins from balance
-    }
+    // Deduct coins if used
+    let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const chk = document.getElementById('coins-check');
+    if(chk && chk.checked) userCoins -= Math.min(userCoins, Math.floor(subtotal * 0.10));
 
-    closePage('cart-page');
-    cart = []; updateCartUI(); filterMenu();
-    
-    // Earn New Coins for this order
-    const earned = Math.floor(Math.random() * 30) + 10; 
+    // Save Address
+    userAddress = add; localStorage.setItem('kavya_address', userAddress);
+
+    // Boom! Earn new coins
+    const earned = Math.floor(Math.random() * 40) + 10;
     userCoins += earned;
     localStorage.setItem('kavya_coins', userCoins);
     
-    // Show 3D Celebration Popup
+    closePage('cart-page');
+    cart = []; updateCartBadge(); renderMenu();
+
+    // Show 3D Coin Celebration
     document.getElementById('earned-coins').innerText = earned;
-    document.getElementById('coin-celebration').classList.remove('hidden');
+    document.getElementById('top-coin-bal').innerText = userCoins;
+    openPopup('coin-celebration');
     
-    setTimeout(() => { renderAuthPage(); }, 2000); 
+    setTimeout(() => { renderAuthPage(); }, 2000);
 }
 
-// Top Header Scroll Effect
-window.addEventListener('scroll', () => {
-    const header = document.getElementById('main-header');
-    if(header) { if(window.scrollY > 40) header.classList.add('scrolled'); else header.classList.remove('scrolled'); }
-}, {passive: true});
+// --- AUTH & PROFILE DASHBOARD ---
+function renderAuthPage() {
+    const container = document.getElementById('auth-container');
+    if(!container) return;
+
+    if(window.loggedInUser) {
+        const progress = Math.min((userCoins / 500) * 100, 100);
+        container.innerHTML = `
+            <div style="text-align:center;">
+                <div class="profile-upload-wrapper" style="position:relative; width:100px; height:100px; margin:0 auto 15px;">
+                    <img id="dashboard-pic" src="${userProfilePic}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid var(--accent-neon);">
+                    <div style="position:absolute; bottom:0; right:0; background:var(--liquid-gold); width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; cursor:pointer;" onclick="document.getElementById('pic-upload').click()"><i class="fa-solid fa-camera"></i></div>
+                    <input type="file" id="pic-upload" accept="image/*" hidden onchange="uploadPic(event)">
+                </div>
+                <h3 style="color:#fff;">${window.loggedInUser}</h3>
+                <p style="color:#888; font-size:12px;">+91 ${userPhone}</p>
+                
+                <div class="profile-card mt-20">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="color:var(--liquid-gold); margin:0;"><i class="fa-solid fa-coins"></i> Kavya Coins</h4>
+                        <span style="font-size:24px; color:var(--accent-neon); font-weight:900;">${userCoins}</span>
+                    </div>
+                    <div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>
+                    <p style="font-size:11px; color:#888;">Reach 500 Coins for a FREE Biryani!</p>
+                </div>
+
+                <div class="profile-card mt-15" style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                    <div style="color:#fff; font-weight:700;"><i class="fa-solid fa-clock-rotate-left" style="color:var(--text-muted); margin-right:10px;"></i> Order History</div>
+                    <i class="fa-solid fa-chevron-right" style="color:#555;"></i>
+                </div>
+
+                <!-- INSTAGRAM LINK (Footer) -->
+                <a href="${INSTAGRAM_LINK}" target="_blank" style="display:block; text-align:center; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color:#fff; padding:15px; border-radius:12px; font-weight:800; margin-top:20px; text-decoration:none; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.4);">
+                    <i class="fa-brands fa-instagram" style="font-size:18px; margin-right:5px;"></i> Follow @kavyafamilyrestaurant
+                </a>
+                <p style="text-align:center; color:#555; font-size:10px; margin-top:10px; font-weight:800; letter-spacing:2px;">POWERED BY LEGEND</p>
+
+                <button class="primary-btn mt-20" style="background:#222; color:#fff; border:1px solid #444;" onclick="logout()">Logout Securely</button>
+            </div>`;
+    } else {
+        container.innerHTML = `
+            <div style="text-align:center; margin-bottom: 40px; margin-top:20px;">
+                <h1 class="brand-title-3d" style="font-size:40px;">KAVYA</h1>
+                <p style="color: var(--accent-neon); letter-spacing: 2px; font-size: 12px; font-weight:800;">LOGIN REQUIRED</p>
+            </div>
+            <input type="text" id="user-name" class="custom-input" placeholder="Full Name (Required)">
+            <input type="tel" id="user-phone" class="custom-input" placeholder="10-Digit Mobile (Required)" maxlength="10">
+            <button class="gold-gradient-btn mt-15" onclick="login()">Enter VIP Portal</button>
+        `;
+    }
+}
+
+function login() {
+    const name = document.getElementById('user-name').value;
+    const phone = document.getElementById('user-phone').value;
+    if(name.trim() === "" || phone.length !== 10) return showToast("Enter valid Name & 10-Digit Mobile.", "error");
+    
+    window.loggedInUser = name; userPhone = phone; 
+    if(!localStorage.getItem('kavya_coins')) { userCoins = 50; localStorage.setItem('kavya_coins', userCoins); }
+    localStorage.setItem('kavya_user_name', name); localStorage.setItem('kavya_user_phone', phone);
+    
+    showToast(`Welcome to Kavya, ${name}!`);
+    setTimeout(() => location.reload(), 800); 
+}
+
+function logout() { if(confirm("Logout from Kavya VIP?")) { localStorage.clear(); location.reload(); } }
+
+function uploadPic(e) {
+    const file = e.target.files[0];
+    if(file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            userProfilePic = ev.target.result;
+            localStorage.setItem('kavya_profile_pic', userProfilePic);
+            document.getElementById('dashboard-pic').src = userProfilePic;
+            document.getElementById('nav-profile-pic').src = userProfilePic;
+            showToast("Profile Picture Updated!");
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// --- DINING GUESTS ---
+function updateGuests(val) {
+    tableGuests += val;
+    if(tableGuests < 1) tableGuests = 1;
+    if(tableGuests > 20) tableGuests = 20;
+    document.getElementById('guest-count').innerText = `${tableGuests} Guests`;
+}
