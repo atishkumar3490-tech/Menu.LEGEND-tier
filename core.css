@@ -1,0 +1,92 @@
+/* =========================================
+   CORE.CSS - Base Structure & Typography
+   ========================================= */
+:root { 
+    --bg-dark: #050505; 
+    --bg-card: #121212;
+    --zomato-red: #E23744; 
+    --zomato-dark-red: #b71c1c; 
+    --liquid-gold: #D4AF37; 
+    --accent-neon: #00E5FF; 
+    --veg-green: #25D366; 
+    --nonveg-red: #E23744; 
+    --text-main: #ffffff;
+    --text-muted: #888888; 
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { display: none !important; }
+html, body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; scroll-behavior: smooth; }
+
+/* Global Utilities */
+.hidden { display: none !important; }
+.mt-5 { margin-top: 5px; } .mt-15 { margin-top: 15px; } .mt-20 { margin-top: 20px; }
+.mb-15 { margin-bottom: 15px; } .p-20 { padding: 20px; }
+.text-xs { font-size: 10px; } .text-sm { font-size: 12px; }
+.text-muted { color: var(--text-muted); } .text-green { color: var(--veg-green); }
+
+/* Pages System */
+.app-page { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: var(--bg-dark); overflow-y: auto; overflow-x: hidden; display: none; }
+.active-page { display: block; z-index: 10; }
+.right-slide-page { display: block; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 50; }
+.right-slide-page.open { transform: translateX(0); }
+.page-scroll-content { padding-bottom: 120px; }
+.bottom-spacer { height: 100px; }
+
+/* Headers (Core) */
+.dark-header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid #1a1a1a; }
+.dark-header h2 { font-size: 16px; font-weight: 600; color: #fff; margin: 0; }
+.back-btn { font-size: 20px; color: #fff; cursor: pointer; padding: 5px; }
+
+/* Zomato Header Zone */
+.hero-red-zone { background: linear-gradient(135deg, var(--zomato-red), #c62828); padding-bottom: 25px; border-radius: 0 0 24px 24px; position: relative; overflow: hidden; }
+.top-sticky-header { position: sticky; top: -1px; z-index: 1000; padding-top: 15px; transition: all 0.3s ease; }
+.header-top-row { display: flex; justify-content: space-between; align-items: center; padding: 0 15px 12px; }
+
+/* Location & Icons */
+.location-wrapper { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.loc-icon { color: #fff; font-size: 18px; margin-top: 2px; }
+.loc-details { display: flex; flex-direction: column; }
+.loc-title { font-size: 15px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 5px; }
+.loc-subtitle { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.coin-pill { background: rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.5); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; color: var(--liquid-gold); display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.profile-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.4); cursor: pointer; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Search Bar Structure */
+.search-container { padding: 0 15px 10px; }
+.smart-search-box { display: flex; align-items: center; padding: 12px 15px; border-radius: 14px; background: #fff; }
+.search-input { flex-grow: 1; background: transparent; border: none; color: #000; margin-left: 10px; outline: none; font-size: 14px; font-weight: 600; }
+.search-icon, .mic-icon { color: var(--zomato-red); font-size: 18px; }
+.divider { width: 1px; height: 18px; background: #ddd; margin: 0 12px; }
+
+/* Apple-Style Horizontal Menu Grid */
+.category-sticky-zone { position: sticky; top: 60px; z-index: 990; background: rgba(5,5,5,0.98); padding: 20px 0 10px; border-radius: 24px 24px 0 0; margin-top: -20px; transition: padding 0.3s ease, box-shadow 0.3s ease; }
+.category-scroll { display: flex; gap: 18px; padding: 0 15px; overflow-x: auto; scroll-behavior: smooth; }
+.category-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 70px; cursor: pointer; }
+.category-item span { font-size: 12px; font-weight: 600; color: var(--text-muted); transition: font-size 0.3s; }
+.category-item.active span { color: #fff; }
+
+/* Wide Food Cards (Structure) */
+.menu-container { padding: 10px 0; }
+.wide-food-card { background: var(--bg-card); border-bottom: 8px solid var(--bg-dark); width: 100%; position: relative; margin-bottom: 10px; }
+.wide-img-box { width: 100%; height: 260px; position: relative; overflow: hidden; }
+.wide-img-box img { width: 100%; height: 100%; object-fit: cover; }
+.wide-info { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
+.food-title-col { width: 68%; }
+.veg-tag { width: 14px; height: 14px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; border-radius: 3px; }
+.veg-tag-inner { width: 6px; height: 6px; border-radius: 50%; }
+.food-name { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+.food-price { font-size: 17px; font-weight: 800; color: #fff; margin-top: 5px; }
+
+/* Forms & Inputs */
+.custom-input { width: 100%; background: #1a1a1a; color: #fff; padding: 15px; border: 1px solid #333; border-radius: 10px; margin-bottom: 15px; font-size: 14px; outline: none; font-weight: 500; }
+.primary-btn { width: 100%; background: var(--zomato-red); color: #fff; font-weight: 800; padding: 15px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+
+/* Bottom Taskbar */
+.bottom-taskbar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,10,0.98); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 12px 5px 25px; border-top: 1px solid #1a1a1a; z-index: 999; }
+.nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 11px; font-weight: 600; gap: 5px; position: relative; cursor: pointer; }
+.nav-item.active { color: #fff; }
+.nav-item i { font-size: 20px; }
+.cart-badge { position: absolute; top: -6px; right: -8px; background: var(--zomato-red); color: #fff; font-size: 10px; font-weight: 900; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
