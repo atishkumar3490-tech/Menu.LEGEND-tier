@@ -2,7 +2,7 @@
    APP.JS - Enterprise State Management, Cart & Firebase Engine
    ========================================================== */
 
-// 🛡️ FAILSAFE UI OBJECT (Crash Guard: Prevents freeze if ui.js has errors)
+// 🛡️ FAILSAFE UI OBJECT (Crash Guard)
 if (typeof window.UI === 'undefined') {
     window.UI = {
         showToast: (msg) => alert(msg),
@@ -56,16 +56,24 @@ class AuthManager {
 
     login(name, phone) {
         if (!name.trim() || phone.length !== 10) {
-            UI.showToast("Please enter a valid Name & 10-digit Mobile number.", "error");
+            if(typeof UI !== 'undefined' && UI.showToast) {
+                UI.showToast("Please enter a valid Name & 10-digit Mobile number.", "error");
+            } else {
+                alert("Please enter a valid Name & 10-digit Mobile number.");
+            }
             return false;
         }
         this.user = name;
         this.phone = phone;
         localStorage.setItem('kavya_user_name', name);
         localStorage.setItem('kavya_user_phone', phone);
-        if (!localStorage.getItem('kavya_coins')) localStorage.setItem('kavya_coins', 50);
+        if (!localStorage.getItem('kavya_coins')) {
+            localStorage.setItem('kavya_coins', 50);
+        }
         
-        UI.showToast(`Welcome to Kavya VIP, ${name}!`);
+        if(typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast(`Welcome to Kavya VIP, ${name}!`);
+        }
         setTimeout(() => location.reload(), 1000);
         return true;
     }
@@ -126,9 +134,17 @@ class CartEngine {
 
     getTotals() {
         let subtotal = this.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        
+        // 5% GST and Delivery Logic
         let gst = Math.floor(subtotal * 0.05);
         let delivery = subtotal >= 199 ? 0 : 30;
-        return { subtotal, gst, delivery, totalBeforeDiscount: subtotal + gst + delivery };
+        
+        return { 
+            subtotal, 
+            gst, 
+            delivery, 
+            totalBeforeDiscount: subtotal + gst + delivery 
+        };
     }
 
     clearCart() {
@@ -150,13 +166,21 @@ let currentCategory = 'All';
 let tableGuests = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Basic Inits
     setupTopHeader();
-    renderCategories();
-    renderMenu();
+    
+    try { 
+        if(typeof categories !== 'undefined') renderCategories(); 
+    } catch(e) { console.error(e); }
+    
+    try { 
+        if(typeof menuItems !== 'undefined') renderMenu(); 
+    } catch(e) { console.error(e); }
+
     updateCartBadge();
     renderAuthPage();
 
-    // 🚀 AUTO SLIDER LOGIC
+    // 🚀 AUTO SLIDER LOGIC (Properly integrated here)
     let currentSlide = 0;
     const slides = document.querySelectorAll('.slide');
     if(slides.length > 0) {
@@ -172,6 +196,7 @@ function setupTopHeader() {
     if (Auth.user) {
         const picEl = document.getElementById('nav-profile-pic');
         if(picEl) picEl.src = Auth.profilePic;
+        
         const coinEl = document.getElementById('top-coin-bal');
         if(coinEl) coinEl.innerText = Auth.coins;
     }
@@ -201,7 +226,9 @@ function setCategory(id, el) {
     renderMenu();
 }
 
-function filterMenu() { renderMenu(); }
+window.filterMenu = function() { 
+    renderMenu(); 
+};
 
 // 🧠 SAFE ACTION HANDLER (Guarantees ADD button won't freeze)
 window.safeAction = function(type, id) {
@@ -225,7 +252,11 @@ function renderMenu() {
     const filtered = menuItems.filter(i => (currentCategory === 'All' || i.category === currentCategory) && i.name.toLowerCase().includes(search));
     
     if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:60px 20px;"><i class="fa-solid fa-utensils" style="font-size:40px; color:#333; margin-bottom:15px;"></i><h3 style="color:#888;">No dishes found</h3></div>`;
+        container.innerHTML = `
+            <div style="text-align:center; padding:60px 20px;">
+                <i class="fa-solid fa-utensils" style="font-size:40px; color:#333; margin-bottom:15px;"></i>
+                <h3 style="color:#888;">No dishes found</h3>
+            </div>`;
         return;
     }
 
@@ -238,18 +269,27 @@ function renderMenu() {
         const needsSmartPopup = (item.variants && item.variants.length > 1) || item.needsSpice;
 
         let actionBtn = totalQty > 0 
-            ? `<div class="z-qty-box" style="background:var(--z-gold); color:#000; border:none;" onclick="safeAction('${needsSmartPopup ? 'smart' : 'qty'}', '${item.id}')"><span style="font-weight:900; margin:0 10px;">${totalQty} Added</span> <i class="fa-solid fa-pen-to-square text-xs"></i></div>`
-            : `<button class="z-add-btn" onclick="safeAction('${needsSmartPopup ? 'smart' : 'add'}', '${item.id}')">ADD <i class="fa-solid fa-plus text-xs" style="margin-left:4px;"></i></button>`;
+            ? `<div class="z-qty-box" style="background:var(--z-gold); color:#000; border:none;" onclick="safeAction('${needsSmartPopup ? 'smart' : 'qty'}', '${item.id}')">
+                <span style="font-weight:900; margin:0 10px;">${totalQty} Added</span> 
+                <i class="fa-solid fa-pen-to-square text-xs"></i>
+               </div>`
+            : `<button class="z-add-btn" onclick="safeAction('${needsSmartPopup ? 'smart' : 'add'}', '${item.id}')">
+                ADD <i class="fa-solid fa-plus text-xs" style="margin-left:4px;"></i>
+               </button>`;
 
         container.innerHTML += `
         <div class="z-food-card">
             <div class="z-food-img-box">
                 <img src="${item.img}" loading="lazy">
-                <div class="z-bookmark-btn" onclick="UI.toggleBookmark(this)"><i class="fa-regular fa-bookmark"></i></div>
+                <div class="z-bookmark-btn" onclick="UI.toggleBookmark(this)">
+                    <i class="fa-regular fa-bookmark"></i>
+                </div>
             </div>
             <div class="z-food-info">
                 <div class="z-food-details">
-                    <div class="z-veg-dot" style="border: 1px solid ${vegColor};"><div class="z-veg-inner" style="background:${vegColor};"></div></div>
+                    <div class="z-veg-dot" style="border: 1px solid ${vegColor};">
+                        <div class="z-veg-inner" style="background:${vegColor};"></div>
+                    </div>
                     <h3 class="z-food-title">${item.name}</h3>
                     <div class="z-rating-tag"><i class="fa-solid fa-star"></i> ${item.rating}</div>
                     <div class="text-xs text-muted font-weight-600">${item.meta}</div>
@@ -263,15 +303,21 @@ function renderMenu() {
 
 function addDirectly(id) {
     if (!Auth.user) { 
-        UI.showToast("Login required to order!"); 
+        if(typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast("Login required to order!", "error"); 
+        }
         return openPage('login-page'); 
     }
     const item = menuItems.find(i => i.id === id);
     const variant = item.variants ? item.variants[0] : {size: 'Regular', price: item.price};
+    
     Cart.addItem(item, variant.size, variant.price, 'None');
     updateCartBadge();
     renderMenu();
-    UI.showToast(`Added ${item.name} to cart`);
+    
+    if(typeof UI !== 'undefined' && UI.showToast) {
+        UI.showToast(`Added ${item.name} to cart`);
+    }
 }
 
 function updateQtyDirect(id) {
@@ -287,7 +333,9 @@ function updateQtyDirect(id) {
 // 🚀 DYNAMIC SMART POPUP INJECTOR
 window.openSmartSelector = function(id) {
     if (!Auth.user) { 
-        UI.showToast("Login required to order!"); 
+        if(typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast("Login required to order!", "error"); 
+        }
         return openPage('login-page'); 
     }
     const item = menuItems.find(i => i.id === id);
@@ -302,9 +350,15 @@ window.openSmartSelector = function(id) {
 
     let variantHTML = '';
     if (item.variants && item.variants.length > 1) {
-        variantHTML = `<h4 style="color:#fff; margin-bottom:10px;">Select Portion/Size</h4><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">`;
+        variantHTML = `
+            <h4 style="color:#fff; margin-bottom:10px;">Select Portion/Size</h4>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">`;
+            
         item.variants.forEach((v, idx) => {
-            variantHTML += `<div class="z-spice-btn ${idx === 0 ? 'active' : ''}" style="flex:1; border:1px solid var(--z-gold); color:var(--z-gold);" onclick="selectVariant(this, '${v.size}', ${v.price})" data-size="${v.size}" data-price="${v.price}">${v.size} - ₹${v.price}</div>`;
+            variantHTML += `
+                <div class="z-spice-btn ${idx === 0 ? 'active' : ''}" style="flex:1; border:1px solid var(--z-gold); color:var(--z-gold);" onclick="selectVariant(this, '${v.size}', ${v.price})" data-size="${v.size}" data-price="${v.price}">
+                    ${v.size} - ₹${v.price}
+                </div>`;
         });
         variantHTML += `</div>`;
     }
@@ -315,7 +369,7 @@ window.openSmartSelector = function(id) {
             <h4 style="color:#fff; margin-bottom:10px;">Spice Level <i class="fa-solid fa-fire text-red"></i></h4>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <div class="z-spice-btn active" onclick="selectSpice(this, 'Mild')" data-spice="Mild">Mild 😌</div>
-                <div class="z-spice-btn" onclick="selectSpice(this, 'Medium')" data-spice="Medium">Medium 🌶️</div>
+                <div class="z-spice-btn" onclick="selectSpice(this, 'Medium')" data-spice="Medium">Medium 🌶️️</div>
                 <div class="z-spice-btn" onclick="selectSpice(this, 'Fire')" data-spice="Fire">Fire 🔥</div>
             </div>`;
     }
@@ -325,16 +379,19 @@ window.openSmartSelector = function(id) {
             <div class="z-sheet-handle"></div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h3 style="color:#fff; font-weight:900;">${item.name}</h3>
-                <button onclick="closeDynamicModal()" style="background:transparent; color:#888; border:none; font-size:24px; cursor:pointer;"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button onclick="closeDynamicModal()" style="background:transparent; color:#888; border:none; font-size:24px; cursor:pointer;">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
             </div>
             ${variantHTML}
             ${spiceHTML}
-            <button class="z-gold-btn" style="width:100%; margin-top:10px; font-weight:900;" onclick="confirmSmartAdd('${item.id}')">Add to Cart <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="z-gold-btn" style="width:100%; margin-top:10px; font-weight:900;" onclick="confirmSmartAdd('${item.id}')">
+                Add to Cart <i class="fa-solid fa-arrow-right"></i>
+            </button>
         </div>
     `;
     
     modal.style.display = 'flex';
-    void modal.offsetWidth; // Force reflow
     setTimeout(() => modal.classList.add('open'), 10);
 };
 
@@ -382,15 +439,20 @@ window.confirmSmartAdd = function(id) {
     closeDynamicModal();
     updateCartBadge();
     renderMenu();
-    UI.showToast(`Added ${item.name} (${variantSize}) to cart`);
+    
+    if(typeof UI !== 'undefined' && UI.showToast) {
+        UI.showToast(`Added ${item.name} (${variantSize}) to cart`);
+    }
 };
 
 function updateCartBadge() {
     let total = Cart.items.reduce((sum, item) => sum + item.quantity, 0);
     const badge = document.getElementById('nav-cart-count');
     if (!badge) return;
+    
     if (total > 0) { 
-        badge.classList.remove('hidden'); badge.innerText = total; 
+        badge.classList.remove('hidden'); 
+        badge.innerText = total; 
         const tab = document.querySelector('.z-cart-tab i');
         if(tab) tab.style.color = 'var(--z-red)'; 
     } else { 
@@ -409,7 +471,13 @@ function renderCartSheet() {
     c.innerHTML = '';
     
     if (Cart.items.length === 0) {
-        c.innerHTML = `<div style="text-align:center; padding:100px 20px;"><i class="fa-solid fa-cart-shopping" style="font-size:60px; color:#222; margin-bottom:20px;"></i><h3 style="color:#fff;">Cart is Empty</h3><p class="text-muted text-sm mt-10">Good food is always cooking!</p><button class="z-gold-btn mt-20" onclick="closePage('cart-page')">Browse Menu</button></div>`;
+        c.innerHTML = `
+            <div style="text-align:center; padding:100px 20px;">
+                <i class="fa-solid fa-cart-shopping" style="font-size:60px; color:#222; margin-bottom:20px;"></i>
+                <h3 style="color:#fff;">Cart is Empty</h3>
+                <p class="text-muted text-sm mt-10">Good food is always cooking!</p>
+                <button class="z-gold-btn mt-20" onclick="closePage('cart-page')">Browse Menu</button>
+            </div>`;
         return;
     }
 
@@ -419,10 +487,14 @@ function renderCartSheet() {
         <div style="background:#111; padding:18px; border-radius:16px; margin-bottom:20px; border:1px solid #222;">
             <label style="color:#888; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
                 Delivery Address 
-                <span style="color:var(--z-neon); cursor:pointer; font-weight:700;" onclick="requestHighAccuracyGPS()"><i class="fa-solid fa-location-crosshairs"></i> Get GPS</span>
+                <span style="color:var(--z-neon); cursor:pointer; font-weight:700;" onclick="requestHighAccuracyGPS()">
+                    <i class="fa-solid fa-location-crosshairs"></i> Get GPS
+                </span>
             </label>
             <textarea id="cart-address" class="z-input mt-10" rows="2" placeholder="Enter complete address...">${Cart.address}</textarea>
-            <div id="gps-status-badge" style="font-size:11px; color:var(--z-green); margin-top:5px; font-weight:700; display:${Cart.gpsLink ? 'block' : 'none'};"><i class="fa-solid fa-satellite-dish"></i> GPS Coordinates Locked</div>
+            <div id="gps-status-badge" style="font-size:11px; color:var(--z-green); margin-top:5px; font-weight:700; display:${Cart.gpsLink ? 'block' : 'none'};">
+                <i class="fa-solid fa-satellite-dish"></i> GPS Coordinates Locked
+            </div>
         </div>
         <h4 style="color:#fff; margin-bottom:15px; font-weight:800;">Your Food</h4>
     `;
@@ -430,6 +502,7 @@ function renderCartSheet() {
     Cart.items.forEach(i => {
         let metaTxt = i.variant;
         if(i.spice !== 'None') metaTxt += ` | Spice: ${i.spice}`;
+        
         c.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:15px; border-radius:16px; margin-bottom:12px; border:1px solid #222;">
             <div style="width:55%;">
@@ -437,15 +510,28 @@ function renderCartSheet() {
                 <div style="font-size:11px; color:#888; margin-top:2px;">${metaTxt}</div>
                 <div style="font-size:16px; color:#fff; font-weight:800; margin-top:6px;">₹${i.price * i.quantity}</div>
             </div>
-            <div class="z-qty-box"><button onclick="Cart.updateQty('${i.id}', '${i.variant}', '${i.spice}', -1); renderCartSheet(); updateCartBadge(); renderMenu();">-</button><span style="color:#fff; font-weight:800;">${i.quantity}</span><button onclick="Cart.updateQty('${i.id}', '${i.variant}', '${i.spice}', 1); renderCartSheet(); updateCartBadge(); renderMenu();">+</button></div>
+            <div class="z-qty-box">
+                <button onclick="Cart.updateQty('${i.id}', '${i.variant}', '${i.spice}', -1); renderCartSheet(); updateCartBadge(); renderMenu();">-</button>
+                <span style="color:#fff; font-weight:800;">${i.quantity}</span>
+                <button onclick="Cart.updateQty('${i.id}', '${i.variant}', '${i.spice}', 1); renderCartSheet(); updateCartBadge(); renderMenu();">+</button>
+            </div>
         </div>`;
     });
 
     c.innerHTML += `
         <div style="background:#111; padding:20px; border-radius:16px; margin-top:25px; border:1px solid #222;">
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;"><span>Item Total</span><span>₹${totals.subtotal}</span></div>
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;"><span>Govt. Taxes (GST)</span><span>₹${totals.gst}</span></div>
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:18px;"><span>Delivery Fee</span><span style="color:${totals.delivery === 0 ? 'var(--z-green)' : '#ccc'}; font-weight:700;">${totals.delivery === 0 ? 'FREE' : '₹'+totals.delivery}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;">
+                <span>Item Total</span><span>₹${totals.subtotal}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;">
+                <span>Govt. Taxes (GST)</span><span>₹${totals.gst}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:18px;">
+                <span>Delivery Fee</span>
+                <span style="color:${totals.delivery === 0 ? 'var(--z-green)' : '#ccc'}; font-weight:700;">
+                    ${totals.delivery === 0 ? 'FREE' : '₹'+totals.delivery}
+                </span>
+            </div>
             
             <div style="background: rgba(212,175,55,0.08); border: 1px dashed var(--z-gold); padding: 14px; border-radius: 12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -456,7 +542,8 @@ function renderCartSheet() {
             </div>
             
             <div style="display:flex; justify-content:space-between; color:#fff; font-size:20px; font-weight:900; border-top:1px dashed #444; padding-top:18px;">
-                <span>Grand Total</span><span style="color:var(--z-neon);">₹<span id="bill-total">${totals.totalBeforeDiscount}</span></span>
+                <span>Grand Total</span>
+                <span style="color:var(--z-neon);">₹<span id="bill-total">${totals.totalBeforeDiscount}</span></span>
             </div>
         </div>
         
@@ -479,7 +566,7 @@ window.calculateFinalBill = function() {
             discEl.classList.remove('hidden'); 
         } else { 
             checkEl.checked = false; 
-            UI.showToast("Not enough coins to redeem"); 
+            if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Not enough coins to redeem", "error"); 
         }
     } else if(discEl) { 
         discEl.classList.add('hidden'); 
@@ -490,33 +577,63 @@ window.calculateFinalBill = function() {
 
 // 📍 REAL GPS TRACKING LOGIC
 window.requestHighAccuracyGPS = function() {
-    if (!Auth.user) return UI.showToast("Please login to use GPS");
-    UI.showToast("📡 Connecting to Satellite GPS...");
+    if (!Auth.user) {
+        if(typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast("Please login to use GPS", "error");
+        }
+        return;
+    }
+    
+    if(typeof UI !== 'undefined' && UI.showToast) {
+        UI.showToast("📡 Connecting to Satellite GPS...");
+    }
     
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const mapLink = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                
                 Cart.gpsLink = mapLink;
                 localStorage.setItem('kavya_gps', mapLink);
+                
                 const cartAdd = document.getElementById('cart-address');
-                if(cartAdd && cartAdd.value.trim() === '') cartAdd.value = "GPS Location Pinned. Please add House/Flat No.";
+                if(cartAdd && cartAdd.value.trim() === '') {
+                    cartAdd.value = "GPS Location Pinned. Please add House/Flat No.";
+                }
+                
                 const badge = document.getElementById('gps-status-badge');
                 if(badge) badge.style.display = 'block';
-                UI.showToast("📍 Location Locked!");
+                
+                if(typeof UI !== 'undefined' && UI.showToast) {
+                    UI.showToast("📍 Location Locked! Map link generated for Admin.");
+                }
             },
-            () => UI.showToast("GPS Error: Please enable location."),
+            (error) => {
+                if(typeof UI !== 'undefined' && UI.showToast) {
+                    UI.showToast("GPS Error: Please enable location permissions.", "error");
+                }
+            },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     } else {
-        UI.showToast("GPS not supported.");
+        if(typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast("GPS not supported on this device", "error");
+        }
     }
 };
 
 // 🚀 FIREBASE ORDER PUSH & LIVE TRACKING TRIGGER
 window.placeOrder = async function(method) {
     const add = document.getElementById('cart-address').value;
-    if (add.trim() === "") return UI.showToast("Delivery Address is mandatory!");
+    
+    if (add.trim() === "") {
+        if(typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast("Delivery Address is mandatory!", "error");
+        }
+        return;
+    }
     
     Cart.address = add;
     localStorage.setItem('kavya_address', add);
@@ -531,7 +648,10 @@ window.placeOrder = async function(method) {
         finalTotal -= coinsUsed;
     }
 
-    if (method === 'UPI') UI.showToast("Connecting to secure UPI gateway...");
+    if (method === 'UPI') {
+        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Connecting to secure UPI gateway...");
+    }
+    
     const orderId = 'ORD' + Math.floor(Math.random() * 900000 + 100000);
 
     // 🔥 Send to Firebase Database
@@ -551,15 +671,19 @@ window.placeOrder = async function(method) {
                 timestamp: window.fbServerTimestamp()
             });
         } catch(e) {
-            console.error("Order Sync Failed:", e);
+            console.error("Order Sync Failed, processing locally:", e);
         }
     }
 
     Cart.clearCart();
-    Auth.earnCoins(Math.floor(Math.random() * 50) + 10);
+    
+    const earned = Math.floor(Math.random() * 50) + 10;
+    Auth.earnCoins(earned);
+    
     closePage('cart-page'); 
     updateCartBadge(); 
     renderMenu();
+    
     launchLiveTracking(orderId, finalTotal, method);
 };
 
@@ -622,32 +746,44 @@ function launchLiveTracking(orderId, amount, method) {
 window.openPage = function(id) {
     if (id === 'cart-page') {
         if (!Auth.user) { 
-            UI.showToast("Login required to view cart!"); 
+            if(typeof UI !== 'undefined' && UI.showToast) {
+                UI.showToast("Login required to view cart!", "error"); 
+            }
             return openPage('login-page'); 
         }
         renderCartSheet(); 
     }
     const p = document.getElementById(id);
-    if (p) { p.style.display = 'block'; setTimeout(() => p.classList.add('open'), 10); }
+    if (p) { 
+        p.style.display = 'block'; 
+        setTimeout(() => p.classList.add('open'), 10); 
+    }
 };
 
 window.closePage = function(id) {
     const p = document.getElementById(id);
-    if (p) { p.classList.remove('open'); setTimeout(() => p.style.display = 'none', 300); }
+    if (p) { 
+        p.classList.remove('open'); 
+        setTimeout(() => p.style.display = 'none', 300); 
+    }
 };
 
-// 👨‍👩‍👧‍👦 DINING GUEST BUTTON FIX
+// 👨‍👩‍👧‍👦 DINING GUEST BUTTON FIX (Fully Formatted)
 window.updateGuests = function(v) {
     tableGuests += v;
     if (tableGuests < 1) tableGuests = 1;
     if (tableGuests > 20) tableGuests = 20;
+    
     const gc = document.getElementById('guest-count');
-    if (gc) gc.innerText = `${tableGuests} Guests`;
+    if (gc) {
+        gc.innerText = `${tableGuests} Guests`;
+    }
 };
 
 function renderAuthPage() {
     const c = document.getElementById('auth-container');
     if (!c) return;
+    
     if (Auth.user) {
         const progress = Math.min((Auth.coins/500)*100, 100);
         c.innerHTML = `
@@ -674,7 +810,7 @@ function renderAuthPage() {
     } else {
         c.innerHTML = `
             <div style="text-align:center; margin-bottom:50px; margin-top:30px;">
-                <h1 class="z-brand-3d" style="font-size:45px;">KAVYA</h1>
+                <h1 class="z-brand-3d">KAVYA</h1>
                 <p style="color:var(--z-neon); font-size:14px; font-weight:800; letter-spacing:2px; margin-top:5px;">VIP LOGIN REQUIRED</p>
             </div>
             <input type="text" id="user-name" class="z-input" placeholder="Enter Full Name">
@@ -683,14 +819,3 @@ function renderAuthPage() {
         `;
     }
 }
-// 🔥 BULLETPROOF AUTO SLIDER (Forces slider to run no matter what)
-window.addEventListener('load', function() {
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-    if(slides.length > 0) {
-        setInterval(() => {
-            slides[currentSlide].classList.add('hidden-slide');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.remove('hidden-slide');
-        }, 3500)
- });
