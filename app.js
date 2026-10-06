@@ -2,6 +2,22 @@
    APP.JS - Enterprise State Management, Cart & Firebase Engine
    ========================================================== */
 
+// 🛡️ FAILSAFE UI OBJECT (Crash Guard: Prevents freeze if ui.js has errors)
+if (typeof window.UI === 'undefined') {
+    window.UI = {
+        showToast: (msg) => alert(msg),
+        toggleBookmark: (el) => el.classList.toggle('bookmarked'),
+        openPopup: (id) => {
+            const el = document.getElementById(id);
+            if(el) { el.style.display = 'flex'; setTimeout(() => el.classList.add('open'), 10); }
+        },
+        closePopup: (id) => {
+            const el = document.getElementById(id);
+            if(el) { el.classList.remove('open'); setTimeout(() => el.style.display = 'none', 300); }
+        }
+    };
+}
+
 // 🔥 FIREBASE ENTERPRISE ENGINE
 let db = null;
 const firebaseConfig = {
@@ -110,8 +126,8 @@ class CartEngine {
 
     getTotals() {
         let subtotal = this.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-        let gst = Math.floor(subtotal * APP_CONFIG.gst_rate);
-        let delivery = subtotal >= APP_CONFIG.free_delivery_threshold ? 0 : APP_CONFIG.delivery_fee;
+        let gst = Math.floor(subtotal * 0.05);
+        let delivery = subtotal >= 199 ? 0 : 30;
         return { subtotal, gst, delivery, totalBeforeDiscount: subtotal + gst + delivery };
     }
 
@@ -139,6 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMenu();
     updateCartBadge();
     renderAuthPage();
+
+    // 🚀 AUTO SLIDER LOGIC
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    if(slides.length > 0) {
+        setInterval(() => {
+            slides[currentSlide].classList.add('hidden-slide');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.remove('hidden-slide');
+        }, 3500);
+    }
 });
 
 function setupTopHeader() {
@@ -176,6 +203,17 @@ function setCategory(id, el) {
 
 function filterMenu() { renderMenu(); }
 
+// 🧠 SAFE ACTION HANDLER (Guarantees ADD button won't freeze)
+window.safeAction = function(type, id) {
+    try {
+        if (type === 'smart') openSmartSelector(id);
+        else if (type === 'add') addDirectly(id);
+        else if (type === 'qty') updateQtyDirect(id);
+    } catch (e) {
+        alert("Developer Alert: " + e.message);
+    }
+};
+
 function renderMenu() {
     const searchEl = document.getElementById('main-search');
     const search = searchEl ? searchEl.value.toLowerCase() : '';
@@ -200,8 +238,8 @@ function renderMenu() {
         const needsSmartPopup = (item.variants && item.variants.length > 1) || item.needsSpice;
 
         let actionBtn = totalQty > 0 
-            ? `<div class="z-qty-box" style="background:var(--z-gold); color:#000; border:none;" onclick="${needsSmartPopup ? `openSmartSelector('${item.id}')` : `updateQtyDirect('${item.id}')`}"><span style="font-weight:900; margin:0 10px;">${totalQty} Added</span> <i class="fa-solid fa-pen-to-square text-xs"></i></div>`
-            : `<button class="z-add-btn" onclick="${needsSmartPopup ? `openSmartSelector('${item.id}')` : `addDirectly('${item.id}')`}">ADD <i class="fa-solid fa-plus text-xs" style="margin-left:4px;"></i></button>`;
+            ? `<div class="z-qty-box" style="background:var(--z-gold); color:#000; border:none;" onclick="safeAction('${needsSmartPopup ? 'smart' : 'qty'}', '${item.id}')"><span style="font-weight:900; margin:0 10px;">${totalQty} Added</span> <i class="fa-solid fa-pen-to-square text-xs"></i></div>`
+            : `<button class="z-add-btn" onclick="safeAction('${needsSmartPopup ? 'smart' : 'add'}', '${item.id}')">ADD <i class="fa-solid fa-plus text-xs" style="margin-left:4px;"></i></button>`;
 
         container.innerHTML += `
         <div class="z-food-card">
@@ -223,9 +261,11 @@ function renderMenu() {
     });
 }
 
-// 🧠 SMART ADD LOGIC
 function addDirectly(id) {
-    if (!Auth.user) { UI.showToast("Login required to order!", "error"); return openPage('login-page'); }
+    if (!Auth.user) { 
+        UI.showToast("Login required to order!"); 
+        return openPage('login-page'); 
+    }
     const item = menuItems.find(i => i.id === id);
     const variant = item.variants ? item.variants[0] : {size: 'Regular', price: item.price};
     Cart.addItem(item, variant.size, variant.price, 'None');
@@ -245,15 +285,18 @@ function updateQtyDirect(id) {
 }
 
 // 🚀 DYNAMIC SMART POPUP INJECTOR
-function openSmartSelector(id) {
-    if (!Auth.user) { UI.showToast("Login required to order!", "error"); return openPage('login-page'); }
+window.openSmartSelector = function(id) {
+    if (!Auth.user) { 
+        UI.showToast("Login required to order!"); 
+        return openPage('login-page'); 
+    }
     const item = menuItems.find(i => i.id === id);
     
     let modal = document.getElementById('dynamic-smart-modal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'dynamic-smart-modal';
-        modal.className = 'z-bottom-sheet';
+        modal.className = 'z-overlay'; 
         document.body.appendChild(modal);
     }
 
@@ -278,40 +321,42 @@ function openSmartSelector(id) {
     }
 
     modal.innerHTML = `
-        <div class="z-sheet-content" style="background:#111; padding:25px; border-top-left-radius:25px; border-top-right-radius:25px; border-top:2px solid var(--z-gold);">
+        <div class="z-bottom-sheet z-slide-up" style="position:absolute; bottom:0; width:100%; max-width:600px;">
+            <div class="z-sheet-handle"></div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h3 style="color:#fff; font-weight:900;">${item.name}</h3>
-                <button onclick="closeDynamicModal()" style="background:transparent; color:#888; border:none; font-size:24px;"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button onclick="closeDynamicModal()" style="background:transparent; color:#888; border:none; font-size:24px; cursor:pointer;"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
             ${variantHTML}
             ${spiceHTML}
-            <button class="z-gold-btn" style="width:100%; margin-top:10px; font-weight:900;" onclick="confirmSmartAdd('${item.id}')">Add to Cart</button>
+            <button class="z-gold-btn" style="width:100%; margin-top:10px; font-weight:900;" onclick="confirmSmartAdd('${item.id}')">Add to Cart <i class="fa-solid fa-arrow-right"></i></button>
         </div>
     `;
     
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
+    void modal.offsetWidth; // Force reflow
     setTimeout(() => modal.classList.add('open'), 10);
-}
+};
 
-function selectVariant(el, size, price) {
+window.selectVariant = function(el, size, price) {
     el.parentElement.querySelectorAll('.z-spice-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
-}
+};
 
-function selectSpice(el, level) {
+window.selectSpice = function(el, level) {
     el.parentElement.querySelectorAll('.z-spice-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
-}
+};
 
-function closeDynamicModal() {
+window.closeDynamicModal = function() {
     const modal = document.getElementById('dynamic-smart-modal');
     if(modal) {
         modal.classList.remove('open');
         setTimeout(() => modal.style.display = 'none', 300);
     }
-}
+};
 
-function confirmSmartAdd(id) {
+window.confirmSmartAdd = function(id) {
     const item = menuItems.find(i => i.id === id);
     const modal = document.getElementById('dynamic-smart-modal');
     
@@ -338,7 +383,7 @@ function confirmSmartAdd(id) {
     updateCartBadge();
     renderMenu();
     UI.showToast(`Added ${item.name} (${variantSize}) to cart`);
-}
+};
 
 function updateCartBadge() {
     let total = Cart.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -421,7 +466,7 @@ function renderCartSheet() {
         </div>`;
 }
 
-function calculateFinalBill() {
+window.calculateFinalBill = function() {
     const totals = Cart.getTotals();
     let disc = 0;
     const checkEl = document.getElementById('coins-check');
@@ -434,54 +479,44 @@ function calculateFinalBill() {
             discEl.classList.remove('hidden'); 
         } else { 
             checkEl.checked = false; 
-            UI.showToast("Not enough coins to redeem", "error"); 
+            UI.showToast("Not enough coins to redeem"); 
         }
     } else if(discEl) { 
         discEl.classList.add('hidden'); 
     }
     
     document.getElementById('bill-total').innerText = totals.totalBeforeDiscount - disc;
-}
+};
 
 // 📍 REAL GPS TRACKING LOGIC
-function requestHighAccuracyGPS() {
-    if (!Auth.user) return UI.showToast("Please login to use GPS", "error");
+window.requestHighAccuracyGPS = function() {
+    if (!Auth.user) return UI.showToast("Please login to use GPS");
     UI.showToast("📡 Connecting to Satellite GPS...");
     
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
-                
+                const mapLink = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
                 Cart.gpsLink = mapLink;
                 localStorage.setItem('kavya_gps', mapLink);
-                
                 const cartAdd = document.getElementById('cart-address');
-                if(cartAdd && cartAdd.value.trim() === '') {
-                    cartAdd.value = "GPS Location Pinned. Please add House/Flat No.";
-                }
-                
+                if(cartAdd && cartAdd.value.trim() === '') cartAdd.value = "GPS Location Pinned. Please add House/Flat No.";
                 const badge = document.getElementById('gps-status-badge');
                 if(badge) badge.style.display = 'block';
-                
-                UI.showToast("📍 Location Locked! Map link generated for Admin.");
+                UI.showToast("📍 Location Locked!");
             },
-            (error) => {
-                UI.showToast("GPS Error: Please enable location permissions.", "error");
-            },
+            () => UI.showToast("GPS Error: Please enable location."),
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     } else {
-        UI.showToast("GPS not supported on this device", "error");
+        UI.showToast("GPS not supported.");
     }
-}
+};
 
 // 🚀 FIREBASE ORDER PUSH & LIVE TRACKING TRIGGER
-async function placeOrder(method) {
+window.placeOrder = async function(method) {
     const add = document.getElementById('cart-address').value;
-    if (add.trim() === "") return UI.showToast("Delivery Address is mandatory!", "error");
+    if (add.trim() === "") return UI.showToast("Delivery Address is mandatory!");
     
     Cart.address = add;
     localStorage.setItem('kavya_address', add);
@@ -516,20 +551,17 @@ async function placeOrder(method) {
                 timestamp: window.fbServerTimestamp()
             });
         } catch(e) {
-            console.error("Order Sync Failed, processing locally:", e);
+            console.error("Order Sync Failed:", e);
         }
     }
 
     Cart.clearCart();
-    const earned = Math.floor(Math.random() * 50) + 10;
-    Auth.earnCoins(earned);
-    
+    Auth.earnCoins(Math.floor(Math.random() * 50) + 10);
     closePage('cart-page'); 
     updateCartBadge(); 
     renderMenu();
-    
     launchLiveTracking(orderId, finalTotal, method);
-}
+};
 
 // ⏱️ LIVE ORDER TRACKING SCREEN
 function launchLiveTracking(orderId, amount, method) {
@@ -537,7 +569,7 @@ function launchLiveTracking(orderId, amount, method) {
     if(!trackScreen) {
         trackScreen = document.createElement('div');
         trackScreen.id = 'live-tracking-screen';
-        trackScreen.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:9999; overflow-y:auto; padding:20px; display:none; flex-direction:column;';
+        trackScreen.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:999999; overflow-y:auto; padding:20px; display:none; flex-direction:column;';
         document.body.appendChild(trackScreen);
     }
     
@@ -580,26 +612,38 @@ function launchLiveTracking(orderId, amount, method) {
                 <span style="color:#888; font-size:12px;">Total Paid (${method})</span>
                 <h3 style="color:#fff; margin:0; font-size:20px;">₹${amount}</h3>
             </div>
-            <button style="background:var(--z-red); color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800;">Receipt</button>
+            <button style="background:var(--z-red); color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800;" onclick="location.reload()">Back to Home</button>
         </div>
     `;
     
     trackScreen.style.display = 'flex';
 }
 
-function openPage(id) {
+window.openPage = function(id) {
     if (id === 'cart-page') {
-        if (!Auth.user) { UI.showToast("Login required to view cart!", "error"); return openPage('login-page'); }
+        if (!Auth.user) { 
+            UI.showToast("Login required to view cart!"); 
+            return openPage('login-page'); 
+        }
         renderCartSheet(); 
     }
     const p = document.getElementById(id);
     if (p) { p.style.display = 'block'; setTimeout(() => p.classList.add('open'), 10); }
-}
+};
 
-function closePage(id) {
+window.closePage = function(id) {
     const p = document.getElementById(id);
     if (p) { p.classList.remove('open'); setTimeout(() => p.style.display = 'none', 300); }
-}
+};
+
+// 👨‍👩‍👧‍👦 DINING GUEST BUTTON FIX
+window.updateGuests = function(v) {
+    tableGuests += v;
+    if (tableGuests < 1) tableGuests = 1;
+    if (tableGuests > 20) tableGuests = 20;
+    const gc = document.getElementById('guest-count');
+    if (gc) gc.innerText = `${tableGuests} Guests`;
+};
 
 function renderAuthPage() {
     const c = document.getElementById('auth-container');
@@ -639,3 +683,14 @@ function renderAuthPage() {
         `;
     }
 }
+// 🔥 BULLETPROOF AUTO SLIDER (Forces slider to run no matter what)
+window.addEventListener('load', function() {
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    if(slides.length > 0) {
+        setInterval(() => {
+            slides[currentSlide].classList.add('hidden-slide');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.remove('hidden-slide');
+        }, 3500)
+ });
