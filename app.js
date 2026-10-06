@@ -18,6 +18,13 @@ if (typeof window.UI === 'undefined') {
     };
 }
 
+// Global Error Catcher to prevent blank screens
+window.onerror = function(msg, url, line) {
+    console.error("App Error:", msg, "at line", line);
+    if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("System syncing... Please wait.", "error");
+    return true; 
+};
+
 // 🔥 FIREBASE ENTERPRISE ENGINE
 let db = null;
 const firebaseConfig = {
@@ -108,28 +115,32 @@ class CartEngine {
     }
 
     addItem(menuItem, variantSize, exactPrice, spiceLevel) {
-        const existingIdx = this.items.findIndex(i => i.id === menuItem.id && i.variant === variantSize && i.spice === spiceLevel);
-        if (existingIdx > -1) {
-            this.items[existingIdx].quantity += 1;
-        } else {
-            this.items.push({ 
-                ...menuItem, 
-                quantity: 1, 
-                variant: variantSize, 
-                price: exactPrice, 
-                spice: spiceLevel || 'None' 
-            });
-        }
-        this.saveState();
+        try {
+            const existingIdx = this.items.findIndex(i => i.id === menuItem.id && i.variant === variantSize && i.spice === spiceLevel);
+            if (existingIdx > -1) {
+                this.items[existingIdx].quantity += 1;
+            } else {
+                this.items.push({ 
+                    ...menuItem, 
+                    quantity: 1, 
+                    variant: variantSize, 
+                    price: exactPrice, 
+                    spice: spiceLevel || 'None' 
+                });
+            }
+            this.saveState();
+        } catch(e) { console.error("Add Item Error:", e); }
     }
 
     updateQty(itemId, variant, spice, amount) {
-        const idx = this.items.findIndex(i => i.id === itemId && i.variant === variant && i.spice === spice);
-        if (idx > -1) {
-            this.items[idx].quantity += amount;
-            if (this.items[idx].quantity <= 0) this.items.splice(idx, 1);
-            this.saveState();
-        }
+        try {
+            const idx = this.items.findIndex(i => i.id === itemId && i.variant === variant && i.spice === spice);
+            if (idx > -1) {
+                this.items[idx].quantity += amount;
+                if (this.items[idx].quantity <= 0) this.items.splice(idx, 1);
+                this.saveState();
+            }
+        } catch(e) { console.error("Update Qty Error:", e); }
     }
 
     getTotals() {
@@ -167,30 +178,57 @@ let tableGuests = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Basic Inits
-    setupTopHeader();
-    
-    try { 
-        if(typeof categories !== 'undefined') renderCategories(); 
-    } catch(e) { console.error(e); }
-    
-    try { 
-        if(typeof menuItems !== 'undefined') renderMenu(); 
-    } catch(e) { console.error(e); }
+    try { setupTopHeader(); } catch(e){}
+    try { if(typeof categories !== 'undefined') renderCategories(); } catch(e){}
+    try { if(typeof menuItems !== 'undefined') renderMenu(); } catch(e){}
 
     updateCartBadge();
     renderAuthPage();
+    checkDiningStatus(); // Shows Pending Dining Status if exists
+
+    // Show persistent tracking banner if order is active
+    try { showActiveOrderBanner(); } catch(e){}
 
     // 🚀 AUTO SLIDER LOGIC (Properly integrated here)
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-    if(slides.length > 0) {
-        setInterval(() => {
-            slides[currentSlide].classList.add('hidden-slide');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.remove('hidden-slide');
-        }, 3500);
-    }
+    try {
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        if(slides.length > 0) {
+            setInterval(() => {
+                slides[currentSlide].classList.add('hidden-slide');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.remove('hidden-slide');
+            }, 3500);
+        }
+    } catch(e) { console.error("Slider Init Error", e); }
 });
+
+// 📌 PERSISTENT ORDER BANNER LOGIC
+window.showActiveOrderBanner = function() {
+    let orderStr = localStorage.getItem('kavya_active_order');
+    if(!orderStr) return;
+    
+    let order = JSON.parse(orderStr);
+    let banner = document.getElementById('active-order-banner');
+    
+    if(!banner) {
+        banner = document.createElement('div');
+        banner.id = 'active-order-banner';
+        // Placed just above the Zomato bottom navbar
+        banner.style.cssText = 'position:fixed; bottom:80px; left:15px; right:15px; background:linear-gradient(135deg, #00c6ff, #0072ff); color:#fff; padding:15px 20px; border-radius:16px; font-weight:800; display:flex; justify-content:space-between; align-items:center; z-index:999; box-shadow:0 8px 25px rgba(0, 114, 255, 0.4); cursor:pointer; font-size: 14px;';
+        
+        banner.onclick = () => launchLiveTracking(order.id, order.amount, order.method);
+        document.body.appendChild(banner);
+    }
+    banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background:#fff; color:#0072ff; width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center;">
+                <i class="fa-solid fa-motorcycle"></i>
+            </div> 
+            <span>Track Order ${order.id}</span>
+        </div> 
+        <i class="fa-solid fa-chevron-right"></i>`;
+};
 
 function setupTopHeader() {
     if (Auth.user) {
@@ -219,12 +257,12 @@ function renderCategories() {
     });
 }
 
-function setCategory(id, el) {
+window.setCategory = function(id, el) {
     currentCategory = id;
     document.querySelectorAll('.z-cat-item').forEach(b => b.classList.remove('active'));
     if(el) el.classList.add('active');
     renderMenu();
-}
+};
 
 window.filterMenu = function() { 
     renderMenu(); 
@@ -237,7 +275,7 @@ window.safeAction = function(type, id) {
         else if (type === 'add') addDirectly(id);
         else if (type === 'qty') updateQtyDirect(id);
     } catch (e) {
-        alert("Developer Alert: " + e.message);
+        console.error("Action Error:", e);
     }
 };
 
@@ -301,7 +339,7 @@ function renderMenu() {
     });
 }
 
-function addDirectly(id) {
+window.addDirectly = function(id) {
     if (!Auth.user) { 
         if(typeof UI !== 'undefined' && UI.showToast) {
             UI.showToast("Login required to order!", "error"); 
@@ -318,9 +356,9 @@ function addDirectly(id) {
     if(typeof UI !== 'undefined' && UI.showToast) {
         UI.showToast(`Added ${item.name} to cart`);
     }
-}
+};
 
-function updateQtyDirect(id) {
+window.updateQtyDirect = function(id) {
     if (!Auth.user) return;
     const item = Cart.items.find(i => i.id === id);
     if(item) {
@@ -328,7 +366,7 @@ function updateQtyDirect(id) {
         updateCartBadge();
         renderMenu();
     }
-}
+};
 
 // 🚀 DYNAMIC SMART POPUP INJECTOR
 window.openSmartSelector = function(id) {
@@ -369,7 +407,7 @@ window.openSmartSelector = function(id) {
             <h4 style="color:#fff; margin-bottom:10px;">Spice Level <i class="fa-solid fa-fire text-red"></i></h4>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <div class="z-spice-btn active" onclick="selectSpice(this, 'Mild')" data-spice="Mild">Mild 😌</div>
-                <div class="z-spice-btn" onclick="selectSpice(this, 'Medium')" data-spice="Medium">Medium 🌶️️</div>
+                <div class="z-spice-btn" onclick="selectSpice(this, 'Medium')" data-spice="Medium">Medium 🌶</div>
                 <div class="z-spice-btn" onclick="selectSpice(this, 'Fire')" data-spice="Fire">Fire 🔥</div>
             </div>`;
     }
@@ -465,7 +503,7 @@ function updateCartBadge() {
 }
 
 // 🔐 SECURE CHECKOUT RENDERER
-function renderCartSheet() {
+window.renderCartSheet = function() {
     const c = document.getElementById('cart-items-container');
     if(!c) return;
     c.innerHTML = '';
@@ -551,7 +589,7 @@ function renderCartSheet() {
             <button style="flex:1; background:#222; color:#fff; border:1px solid #444; padding:16px; border-radius:14px; font-weight:800;" onclick="placeOrder('COD')">Cash (COD)</button>
             <button style="flex:1.5; background:var(--z-red); color:#fff; border:none; padding:16px; border-radius:14px; font-weight:900; box-shadow:0 6px 15px rgba(226,55,68,0.4);" onclick="placeOrder('UPI')">Pay via UPI <i class="fa-solid fa-bolt" style="margin-left:5px;"></i></button>
         </div>`;
-}
+};
 
 window.calculateFinalBill = function() {
     const totals = Cart.getTotals();
@@ -654,6 +692,9 @@ window.placeOrder = async function(method) {
     
     const orderId = 'ORD' + Math.floor(Math.random() * 900000 + 100000);
 
+    // 🔥 SAVE ACTIVE ORDER TO LOCALSTORAGE FOR PERSISTENT BANNER
+    localStorage.setItem('kavya_active_order', JSON.stringify({id: orderId, amount: finalTotal, method: method}));
+
     // 🔥 Send to Firebase Database
     if (window.db && window.fbAddDoc) {
         try {
@@ -684,11 +725,12 @@ window.placeOrder = async function(method) {
     updateCartBadge(); 
     renderMenu();
     
+    showActiveOrderBanner();
     launchLiveTracking(orderId, finalTotal, method);
 };
 
-// ⏱️ LIVE ORDER TRACKING SCREEN
-function launchLiveTracking(orderId, amount, method) {
+// ⏱️ LIVE ORDER TRACKING SCREEN (Now hides cleanly without reload)
+window.launchLiveTracking = function(orderId, amount, method) {
     let trackScreen = document.getElementById('live-tracking-screen');
     if(!trackScreen) {
         trackScreen = document.createElement('div');
@@ -736,12 +778,12 @@ function launchLiveTracking(orderId, amount, method) {
                 <span style="color:#888; font-size:12px;">Total Paid (${method})</span>
                 <h3 style="color:#fff; margin:0; font-size:20px;">₹${amount}</h3>
             </div>
-            <button style="background:var(--z-red); color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800;" onclick="location.reload()">Back to Home</button>
+            <button style="background:var(--z-red); color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800;" onclick="document.getElementById('live-tracking-screen').style.display='none'">Back to Home</button>
         </div>
     `;
     
     trackScreen.style.display = 'flex';
-}
+};
 
 window.openPage = function(id) {
     if (id === 'cart-page') {
@@ -768,7 +810,7 @@ window.closePage = function(id) {
     }
 };
 
-// 👨‍👩‍👧‍👦 DINING GUEST BUTTON FIX (Fully Formatted)
+// 👨‍👩‍👧‍👦 DINING RESERVATION SYSTEM (WITH FIREBASE & STATUS PENDING)
 window.updateGuests = function(v) {
     tableGuests += v;
     if (tableGuests < 1) tableGuests = 1;
@@ -779,6 +821,84 @@ window.updateGuests = function(v) {
         gc.innerText = `${tableGuests} Guests`;
     }
 };
+
+window.reserveTable = async function() {
+    if (!Auth.user) { 
+        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Login required for reservation!", "error"); 
+        return openPage('login-page'); 
+    }
+    
+    const timeInput = document.querySelector('input[type="time"]');
+    const time = timeInput ? timeInput.value : "19:30";
+    const resId = 'RES' + Math.floor(Math.random() * 90000 + 10000);
+    
+    // UI Feedback immediately
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Reserving...';
+    btn.disabled = true;
+
+    try {
+        if (window.db && window.fbAddDoc) {
+            await window.fbAddDoc(window.fbCollection(window.db, "reservations"), {
+                reservationId: resId,
+                customer: Auth.user,
+                phone: Auth.phone,
+                guests: tableGuests,
+                time: time,
+                status: 'Pending',
+                timestamp: window.fbServerTimestamp()
+            });
+        }
+        
+        // Save to local storage to show status
+        localStorage.setItem('kavya_dining_status', JSON.stringify({ id: resId, guests: tableGuests, time: time, status: 'Pending Confirmation ⏳' }));
+        window.checkDiningStatus();
+        
+        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Table request sent! Awaiting Admin approval.");
+    } catch(e) {
+        console.error("Reservation Error:", e);
+        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Network error. Could not book table.", "error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+};
+
+window.checkDiningStatus = function() {
+    const resStr = localStorage.getItem('kavya_dining_status');
+    const diningBody = document.querySelector('.z-dining-body');
+    
+    if (resStr && diningBody) {
+        const res = JSON.parse(resStr);
+        // Replace the booking form with a status card
+        diningBody.innerHTML = `
+            <h4 class="z-section-title" style="padding: 20px;">Your Reservation</h4>
+            <div class="z-card" style="margin: 0 20px; background: rgba(212,175,55,0.1); border: 1px dashed var(--z-gold);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:#888; font-size:12px;">Booking ID</span>
+                    <span style="color:#fff; font-weight:800;">${res.id}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:#888; font-size:12px;">Guests & Time</span>
+                    <span style="color:#fff; font-weight:800;">${res.guests} Guests at ${res.time}</span>
+                </div>
+                <div style="margin-top:20px; padding:15px; background:#111; border-radius:12px; text-align:center;">
+                    <h3 style="color:var(--z-neon); margin:0; font-size:16px;">${res.status}</h3>
+                    <p style="color:#888; font-size:12px; margin-top:5px;">We will notify you once confirmed by the restaurant.</p>
+                </div>
+                <button class="z-input mt-20" style="background:#222; border:none; font-weight:800; cursor:pointer;" onclick="cancelReservation()">Cancel Request</button>
+            </div>
+        `;
+    }
+};
+
+window.cancelReservation = function() {
+    localStorage.removeItem('kavya_dining_status');
+    if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Reservation request cancelled.");
+    location.reload(); // Reload to show the booking form again
+};
+
 
 function renderAuthPage() {
     const c = document.getElementById('auth-container');
