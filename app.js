@@ -1,13 +1,41 @@
 /* ==========================================================
-   APP.JS - Enterprise State Management & Cart Engine
+   APP.JS - Enterprise State Management, Cart & Firebase Engine
    ========================================================== */
 
+// 🔥 FIREBASE ENTERPRISE ENGINE (Dynamic Safe Load)
+let db = null;
+const firebaseConfig = {
+    apiKey: "AIzaSyBsP14Fn5iyr_y8KVODcBPxFxPyrSyzAzQ",
+    authDomain: "kavya-rsturant.firebaseapp.com",
+    projectId: "kavya-rsturant",
+    storageBucket: "kavya-rsturant.firebasestorage.app",
+    messagingSenderId: "828437773467",
+    appId: "1:828437773467:web:914fc4b67de7b96d55da3e"
+};
+
+async function initFirebase() {
+    try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js");
+        const { getFirestore, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.fbAddDoc = addDoc;
+        window.fbCollection = collection;
+        window.fbServerTimestamp = serverTimestamp;
+        console.log("🔥 Firebase DB Connected Successfully!");
+    } catch (e) {
+        console.error("Firebase Engine Error:", e);
+    }
+}
+initFirebase();
+
+// 👑 AUTHENTICATION MANAGER
 class AuthManager {
     constructor() {
         this.user = localStorage.getItem('kavya_user_name') || null;
         this.phone = localStorage.getItem('kavya_user_phone') || null;
         this.coins = parseInt(localStorage.getItem('kavya_coins') || 50);
-        this.profilePic = localStorage.getItem('kavya_profile_pic') || "https://via.placeholder.com/150/222/fff?text=VIP";
+        this.profilePic = localStorage.getItem('kavya_profile_pic') || "https://ui-avatars.com/api/?name=VIP&background=d4af37&color=000";
     }
 
     login(name, phone) {
@@ -47,24 +75,33 @@ class AuthManager {
     }
 }
 
+// 🛒 ADVANCED CART ENGINE
 class CartEngine {
     constructor() {
         this.items = JSON.parse(localStorage.getItem('kavya_cart') || '[]');
         this.address = localStorage.getItem('kavya_address') || "";
+        this.gpsLink = localStorage.getItem('kavya_gps') || "";
     }
 
-    addItem(menuItem, spiceLevel) {
-        const existingIdx = this.items.findIndex(i => i.id === menuItem.id && i.spice === spiceLevel);
+    addItem(menuItem, variantSize, exactPrice, spiceLevel) {
+        // Unique identification by Item + Variant + Spice
+        const existingIdx = this.items.findIndex(i => i.id === menuItem.id && i.variant === variantSize && i.spice === spiceLevel);
         if (existingIdx > -1) {
             this.items[existingIdx].quantity += 1;
         } else {
-            this.items.push({ ...menuItem, quantity: 1, spice: spiceLevel });
+            this.items.push({ 
+                ...menuItem, 
+                quantity: 1, 
+                variant: variantSize, 
+                price: exactPrice, 
+                spice: spiceLevel || 'None' 
+            });
         }
         this.saveState();
     }
 
-    updateQty(itemId, amount) {
-        const idx = this.items.findIndex(i => i.id === itemId);
+    updateQty(itemId, variant, spice, amount) {
+        const idx = this.items.findIndex(i => i.id === itemId && i.variant === variant && i.spice === spice);
         if (idx > -1) {
             this.items[idx].quantity += amount;
             if (this.items[idx].quantity <= 0) this.items.splice(idx, 1);
@@ -95,8 +132,6 @@ window.Cart = new CartEngine();
 
 // --- APP INITIALIZATION ---
 let currentCategory = 'All';
-let selectedFlavorId = null;
-let currentSpice = 'Mild';
 let tableGuests = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -107,20 +142,23 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAuthPage();
 });
 
-// --- CORE APP FUNCTIONS ---
 function setupTopHeader() {
     if (Auth.user) {
-        document.getElementById('nav-profile-pic').src = Auth.profilePic;
-        document.getElementById('top-coin-bal').innerText = Auth.coins;
+        const picEl = document.getElementById('nav-profile-pic');
+        if(picEl) picEl.src = Auth.profilePic;
+        const coinEl = document.getElementById('top-coin-bal');
+        if(coinEl) coinEl.innerText = Auth.coins;
     }
     const hr = new Date().getHours();
     const g = hr < 12 ? "Good Morning" : hr < 16 ? "Good Afternoon" : "Good Evening";
-    document.getElementById('dynamic-greeting').innerText = `${g}, ${Auth.user || 'Legend'}!`;
+    const greetEl = document.getElementById('dynamic-greeting');
+    if(greetEl) greetEl.innerText = `${g}, ${Auth.user || 'Legend'}!`;
 }
 
 function renderCategories() {
     const cont = document.getElementById('category-scroll-container');
     if (!cont) return;
+    cont.innerHTML = '';
     categories.forEach(cat => {
         cont.innerHTML += `
             <div class="z-cat-item ${cat.id === 'All' ? 'active' : ''}" onclick="setCategory('${cat.id}', this)">
@@ -133,15 +171,18 @@ function renderCategories() {
 function setCategory(id, el) {
     currentCategory = id;
     document.querySelectorAll('.z-cat-item').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
+    if(el) el.classList.add('active');
     renderMenu();
 }
 
 function filterMenu() { renderMenu(); }
 
 function renderMenu() {
-    const search = document.getElementById('main-search').value.toLowerCase();
+    const searchEl = document.getElementById('main-search');
+    const search = searchEl ? searchEl.value.toLowerCase() : '';
     const container = document.getElementById('menu-items-container');
+    if(!container) return;
+    
     container.innerHTML = '';
 
     const filtered = menuItems.filter(i => (currentCategory === 'All' || i.category === currentCategory) && i.name.toLowerCase().includes(search));
@@ -152,13 +193,17 @@ function renderMenu() {
     }
 
     filtered.forEach(item => {
-        // Advanced checking to see if item is in cart
-        const cartItem = Cart.items.find(i => i.id === item.id);
-        const vegColor = item.veg ? 'var(--z-green)' : 'var(--z-red)';
+        // Find total quantity of this item across all variants in cart
+        const cartItems = Cart.items.filter(i => i.id === item.id);
+        const totalQty = cartItems.reduce((sum, i) => sum + i.quantity, 0);
         
-        let actionBtn = cartItem 
-            ? `<div class="z-qty-box"><button onclick="updateQty('${item.id}', -1)">-</button><span style="color:#fff; font-weight:800;">${cartItem.quantity}</span><button onclick="updateQty('${item.id}', 1)">+</button></div>`
-            : `<button class="z-add-btn" onclick="openFlavorSelector('${item.id}')">ADD</button>`;
+        const vegColor = item.veg ? 'var(--z-green)' : 'var(--z-red)';
+        const displayStrike = item.strikePrice ? `<span style="text-decoration: line-through; color: #888; font-size: 12px; margin-right: 5px;">₹${item.strikePrice}</span>` : '';
+        const needsSmartPopup = (item.variants && item.variants.length > 1) || item.needsSpice;
+
+        let actionBtn = totalQty > 0 
+            ? `<div class="z-qty-box" style="background:var(--z-gold); color:#000; border:none;" onclick="${needsSmartPopup ? `openSmartSelector('${item.id}')` : `updateQtyDirect('${item.id}')`}"><span style="font-weight:900; margin:0 10px;">${totalQty} Added</span> <i class="fa-solid fa-pen-to-square text-xs"></i></div>`
+            : `<button class="z-add-btn" onclick="${needsSmartPopup ? `openSmartSelector('${item.id}')` : `addDirectly('${item.id}')`}">ADD <i class="fa-solid fa-plus text-xs" style="margin-left:4px;"></i></button>`;
 
         container.innerHTML += `
         <div class="z-food-card">
@@ -172,7 +217,7 @@ function renderMenu() {
                     <h3 class="z-food-title">${item.name}</h3>
                     <div class="z-rating-tag"><i class="fa-solid fa-star"></i> ${item.rating}</div>
                     <div class="text-xs text-muted font-weight-600">${item.meta}</div>
-                    <div class="z-food-price">₹${item.price}</div>
+                    <div class="z-food-price">${displayStrike}₹${item.price}</div>
                 </div>
                 <div>${actionBtn}</div>
             </div>
@@ -180,55 +225,151 @@ function renderMenu() {
     });
 }
 
-// --- ADD LOGIC ---
-function openFlavorSelector(id) {
+// 🧠 SMART ADD LOGIC (Direct vs Popup)
+function addDirectly(id) {
     if (!Auth.user) { UI.showToast("Login required to order!", "error"); return openPage('login-page'); }
-    selectedFlavorId = id;
-    UI.openPopup('flavor-slider-modal');
+    const item = menuItems.find(i => i.id === id);
+    const variant = item.variants ? item.variants[0] : {size: 'Regular', price: item.price};
+    Cart.addItem(item, variant.size, variant.price, 'None');
+    updateCartBadge();
+    renderMenu();
+    UI.showToast(`Added ${item.name} to cart`);
 }
 
-function setSpice(el, level) {
-    document.querySelectorAll('.z-spice-btn').forEach(b => b.classList.remove('active'));
+function updateQtyDirect(id) {
+    if (!Auth.user) return;
+    const item = Cart.items.find(i => i.id === id);
+    if(item) {
+        Cart.updateQty(item.id, item.variant, item.spice, 1);
+        updateCartBadge();
+        renderMenu();
+    }
+}
+
+// 🚀 DYNAMIC SMART POPUP INJECTOR
+function openSmartSelector(id) {
+    if (!Auth.user) { UI.showToast("Login required to order!", "error"); return openPage('login-page'); }
+    const item = menuItems.find(i => i.id === id);
+    
+    // Create popup dynamically if it doesn't exist
+    let modal = document.getElementById('dynamic-smart-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'dynamic-smart-modal';
+        modal.className = 'z-bottom-sheet';
+        document.body.appendChild(modal);
+    }
+
+    let variantHTML = '';
+    if (item.variants && item.variants.length > 1) {
+        variantHTML = `<h4 style="color:#fff; margin-bottom:10px;">Select Portion/Size</h4><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">`;
+        item.variants.forEach((v, idx) => {
+            variantHTML += `<div class="z-spice-btn ${idx === 0 ? 'active' : ''}" style="flex:1; border:1px solid var(--z-gold); color:var(--z-gold);" onclick="selectVariant(this, '${v.size}', ${v.price})" data-size="${v.size}" data-price="${v.price}">${v.size} - ₹${v.price}</div>`;
+        });
+        variantHTML += `</div>`;
+    }
+
+    let spiceHTML = '';
+    if (item.needsSpice) {
+        spiceHTML = `
+            <h4 style="color:#fff; margin-bottom:10px;">Spice Level <i class="fa-solid fa-fire text-red"></i></h4>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <div class="z-spice-btn active" onclick="selectSpice(this, 'Mild')" data-spice="Mild">Mild 😌</div>
+                <div class="z-spice-btn" onclick="selectSpice(this, 'Medium')" data-spice="Medium">Medium 🌶️</div>
+                <div class="z-spice-btn" onclick="selectSpice(this, 'Fire')" data-spice="Fire">Fire 🔥</div>
+            </div>`;
+    }
+
+    modal.innerHTML = `
+        <div class="z-sheet-content" style="background:#111; padding:25px; border-top-left-radius:25px; border-top-right-radius:25px; border-top:2px solid var(--z-gold);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="color:#fff; font-weight:900;">${item.name}</h3>
+                <button onclick="closeDynamicModal()" style="background:transparent; color:#888; border:none; font-size:24px;"><i class="fa-solid fa-circle-xmark"></i></button>
+            </div>
+            ${variantHTML}
+            ${spiceHTML}
+            <button class="z-gold-btn" style="width:100%; margin-top:10px; font-weight:900;" onclick="confirmSmartAdd('${item.id}')">Add to Cart</button>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    setTimeout(() => modal.classList.add('open'), 10);
+}
+
+function selectVariant(el, size, price) {
+    el.parentElement.querySelectorAll('.z-spice-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
-    currentSpice = level;
 }
 
-document.getElementById('confirm-flavor-btn').addEventListener('click', () => {
-    UI.closePopup('flavor-slider-modal');
-    const item = menuItems.find(i => i.id === selectedFlavorId);
-    Cart.addItem(item, currentSpice);
-    updateCartBadge();
-    renderMenu();
-    UI.showToast(`Added ${item.name} (${currentSpice}) to cart`);
-});
+function selectSpice(el, level) {
+    el.parentElement.querySelectorAll('.z-spice-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
 
-function updateQty(id, amt) {
-    Cart.updateQty(id, amt);
+function closeDynamicModal() {
+    const modal = document.getElementById('dynamic-smart-modal');
+    if(modal) {
+        modal.classList.remove('open');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+}
+
+function confirmSmartAdd(id) {
+    const item = menuItems.find(i => i.id === id);
+    const modal = document.getElementById('dynamic-smart-modal');
+    
+    // Get selected variant
+    let variantSize = 'Regular', exactPrice = item.price;
+    if (item.variants && item.variants.length > 1) {
+        const activeVariant = modal.querySelector('div[data-size].active');
+        if(activeVariant) {
+            variantSize = activeVariant.getAttribute('data-size');
+            exactPrice = parseFloat(activeVariant.getAttribute('data-price'));
+        }
+    } else if (item.variants) {
+        variantSize = item.variants[0].size;
+        exactPrice = item.variants[0].price;
+    }
+
+    // Get selected spice
+    let spiceLevel = 'None';
+    if (item.needsSpice) {
+        const activeSpice = modal.querySelector('div[data-spice].active');
+        if(activeSpice) spiceLevel = activeSpice.getAttribute('data-spice');
+    }
+
+    Cart.addItem(item, variantSize, exactPrice, spiceLevel);
+    closeDynamicModal();
     updateCartBadge();
     renderMenu();
-    if (document.getElementById('cart-page').classList.contains('open')) renderCartSheet();
+    UI.showToast(`Added ${item.name} (${variantSize}) to cart`);
 }
 
 function updateCartBadge() {
     let total = Cart.items.reduce((sum, item) => sum + item.quantity, 0);
     const badge = document.getElementById('nav-cart-count');
+    if (!badge) return;
     if (total > 0) { 
         badge.classList.remove('hidden'); badge.innerText = total; 
-        document.querySelector('.z-cart-tab i').style.color = 'var(--z-red)'; 
+        const tab = document.querySelector('.z-cart-tab i');
+        if(tab) tab.style.color = 'var(--z-red)'; 
     } else { 
         badge.classList.add('hidden'); 
-        document.querySelector('.z-cart-tab i').style.color = 'var(--z-muted)'; 
-        if(document.getElementById('cart-page').classList.contains('open')) renderCartSheet();
+        const tab = document.querySelector('.z-cart-tab i');
+        if(tab) tab.style.color = 'var(--z-muted)'; 
+        const cartPage = document.getElementById('cart-page');
+        if(cartPage && cartPage.classList.contains('open')) renderCartSheet();
     }
 }
 
-// --- SECURE CHECKOUT RENDERER ---
+// 🔐 SECURE CHECKOUT RENDERER
 function renderCartSheet() {
     const c = document.getElementById('cart-items-container');
+    if(!c) return;
     c.innerHTML = '';
     
     if (Cart.items.length === 0) {
-        c.innerHTML = `<div style="text-align:center; padding:100px 20px;"><i class="fa-solid fa-cart-shopping" style="font-size:60px; color:#222; margin-bottom:20px;"></i><h3 style="color:#fff;">Cart is Empty</h3><p class="text-muted text-sm mt-10">Good food is always cooking! Go ahead, order some yummy items from the menu.</p><button class="z-gold-btn mt-20" onclick="closePage('cart-page')">Browse Menu</button></div>`;
+        c.innerHTML = `<div style="text-align:center; padding:100px 20px;"><i class="fa-solid fa-cart-shopping" style="font-size:60px; color:#222; margin-bottom:20px;"></i><h3 style="color:#fff;">Cart is Empty</h3><p class="text-muted text-sm mt-10">Good food is always cooking!</p><button class="z-gold-btn mt-20" onclick="closePage('cart-page')">Browse Menu</button></div>`;
         return;
     }
 
@@ -238,22 +379,25 @@ function renderCartSheet() {
         <div style="background:#111; padding:18px; border-radius:16px; margin-bottom:20px; border:1px solid #222;">
             <label style="color:#888; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
                 Delivery Address 
-                <span style="color:var(--z-neon); cursor:pointer; font-weight:700;" onclick="requestLocation()"><i class="fa-solid fa-location-crosshairs"></i> Get GPS</span>
+                <span style="color:var(--z-neon); cursor:pointer; font-weight:700;" onclick="requestHighAccuracyGPS()"><i class="fa-solid fa-location-crosshairs"></i> Get GPS</span>
             </label>
             <textarea id="cart-address" class="z-input mt-10" rows="2" placeholder="Enter complete address...">${Cart.address}</textarea>
+            <div id="gps-status-badge" style="font-size:11px; color:var(--z-green); margin-top:5px; font-weight:700; display:${Cart.gpsLink ? 'block' : 'none'};"><i class="fa-solid fa-satellite-dish"></i> GPS Coordinates Locked</div>
         </div>
-        <h4 style="color:#fff; margin-bottom:15px; font-weight:800;">Items in your cart</h4>
+        <h4 style="color:#fff; margin-bottom:15px; font-weight:800;">Your Food</h4>
     `;
 
     Cart.items.forEach(i => {
+        let metaTxt = i.variant;
+        if(i.spice !== 'None') metaTxt += ` | Spice: ${i.spice}`;
         c.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:15px; border-radius:16px; margin-bottom:12px; border:1px solid #222;">
             <div style="width:55%;">
                 <div style="font-size:15px; color:#fff; font-weight:700;">${i.name}</div>
-                <div style="font-size:11px; color:#888; margin-top:2px;"><i class="fa-solid fa-fire text-red"></i> Spice: ${i.spice}</div>
+                <div style="font-size:11px; color:#888; margin-top:2px;">${metaTxt}</div>
                 <div style="font-size:16px; color:#fff; font-weight:800; margin-top:6px;">₹${i.price * i.quantity}</div>
             </div>
-            <div class="z-qty-box"><button onclick="updateQty('${i.id}', -1)">-</button><span style="color:#fff; font-weight:800;">${i.quantity}</span><button onclick="updateQty('${i.id}', 1)">+</button></div>
+            <div class="z-qty-box"><button onclick="Cart.updateQty('${i.id}', '${i.variant}', '${i.spice}', -1); renderCartSheet(); updateCartBadge(); renderMenu();">-</button><span style="color:#fff; font-weight:800;">${i.quantity}</span><button onclick="Cart.updateQty('${i.id}', '${i.variant}', '${i.spice}', 1); renderCartSheet(); updateCartBadge(); renderMenu();">+</button></div>
         </div>`;
     });
 
@@ -285,39 +429,104 @@ function renderCartSheet() {
 function calculateFinalBill() {
     const totals = Cart.getTotals();
     let disc = 0;
+    const checkEl = document.getElementById('coins-check');
+    const discEl = document.getElementById('coin-discount');
     
-    if (document.getElementById('coins-check').checked) {
-        disc = Math.min(Auth.coins, Math.floor(totals.subtotal * 0.10)); // Max 10% discount
+    if (checkEl && checkEl.checked) {
+        disc = Math.min(Auth.coins, Math.floor(totals.subtotal * 0.10));
         if (disc > 0) { 
-            document.getElementById('coin-discount').innerText = `-₹${disc}`; 
-            document.getElementById('coin-discount').classList.remove('hidden'); 
+            discEl.innerText = `-₹${disc}`; 
+            discEl.classList.remove('hidden'); 
         } else { 
-            document.getElementById('coins-check').checked = false; 
+            checkEl.checked = false; 
             UI.showToast("Not enough coins to redeem", "error"); 
         }
-    } else { 
-        document.getElementById('coin-discount').classList.add('hidden'); 
+    } else if(discEl) { 
+        discEl.classList.add('hidden'); 
     }
     
     document.getElementById('bill-total').innerText = totals.totalBeforeDiscount - disc;
 }
 
-function placeOrder(method) {
+// 📍 REAL GPS TRACKING LOGIC
+function requestHighAccuracyGPS() {
+    if (!Auth.user) return UI.showToast("Please login to use GPS", "error");
+    UI.showToast("📡 Connecting to Satellite GPS...");
+    
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                
+                Cart.gpsLink = mapLink;
+                localStorage.setItem('kavya_gps', mapLink);
+                
+                const cartAdd = document.getElementById('cart-address');
+                if(cartAdd && cartAdd.value.trim() === '') {
+                    cartAdd.value = "GPS Location Pinned. Please add House/Flat No.";
+                }
+                
+                const badge = document.getElementById('gps-status-badge');
+                if(badge) badge.style.display = 'block';
+                
+                UI.showToast("📍 Location Locked! Map link generated for Admin.");
+            },
+            (error) => {
+                UI.showToast("GPS Error: Please enable location permissions.", "error");
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    } else {
+        UI.showToast("GPS not supported on this device", "error");
+    }
+}
+
+// 🚀 FIREBASE ORDER PUSH & LIVE TRACKING TRIGGER
+async function placeOrder(method) {
     const add = document.getElementById('cart-address').value;
     if (add.trim() === "") return UI.showToast("Delivery Address is mandatory!", "error");
     
+    Cart.address = add;
     localStorage.setItem('kavya_address', add);
     
-    // Deduct coins if used
+    const totals = Cart.getTotals();
+    let finalTotal = totals.totalBeforeDiscount;
+    let coinsUsed = 0;
+
     if (document.getElementById('coins-check') && document.getElementById('coins-check').checked) {
-        let disc = Math.min(Auth.coins, Math.floor(Cart.getTotals().subtotal * 0.10));
-        Auth.deductCoins(disc);
+        coinsUsed = Math.min(Auth.coins, Math.floor(totals.subtotal * 0.10));
+        Auth.deductCoins(coinsUsed);
+        finalTotal -= coinsUsed;
     }
 
     if (method === 'UPI') UI.showToast("Connecting to secure UPI gateway...");
+    const orderId = 'ORD' + Math.floor(Math.random() * 900000 + 100000);
 
+    // 🔥 Send to Firebase Database
+    if (window.db && window.fbAddDoc) {
+        try {
+            await window.fbAddDoc(window.fbCollection(window.db, "orders"), {
+                orderId: orderId,
+                customer: Auth.user, 
+                phone: Auth.phone,
+                items: Cart.items, 
+                totalAmount: finalTotal, 
+                paymentMethod: method,
+                address: Cart.address, 
+                gpsLink: Cart.gpsLink || 'Not Provided',
+                coinsRedeemed: coinsUsed,
+                status: 'Preparing',
+                timestamp: window.fbServerTimestamp()
+            });
+        } catch(e) {
+            console.error("Order Sync Failed, processing locally:", e);
+        }
+    }
+
+    // Clean up and start Live Tracking
     Cart.clearCart();
-    
     const earned = Math.floor(Math.random() * 50) + 10;
     Auth.earnCoins(earned);
     
@@ -325,26 +534,64 @@ function placeOrder(method) {
     updateCartBadge(); 
     renderMenu();
     
-    document.getElementById('earned-coins').innerText = earned; 
-    UI.openPopup('coin-celebration');
-    
-    setTimeout(() => { 
-        if (Auth.user) document.getElementById('top-coin-bal').innerText = Auth.coins; 
-        renderAuthPage(); 
-    }, 2000);
+    // Launch Tracking Screen
+    launchLiveTracking(orderId, finalTotal, method);
 }
 
-// --- GPS & ROUTING ---
-function requestLocation() {
-    if (!Auth.user) return UI.showToast("Please login to use GPS", "error");
-    UI.showToast("Fetching high-accuracy GPS data...");
-    setTimeout(() => {
-        const locEl = document.getElementById('user-location');
-        const cartAdd = document.getElementById('cart-address');
-        if(locEl) locEl.innerHTML = `GPS Verified <i class="fa-solid fa-circle-check text-green text-xs"></i>`;
-        if(cartAdd) cartAdd.value = "Ramkrishna Nagar, Patna, Bihar (Verified by GPS)";
-        UI.showToast("Location locked successfully!");
-    }, 1500); // Simulating network latency for realism
+// ⏱️ LIVE ORDER TRACKING SCREEN (Point 8)
+function launchLiveTracking(orderId, amount, method) {
+    let trackScreen = document.getElementById('live-tracking-screen');
+    if(!trackScreen) {
+        trackScreen = document.createElement('div');
+        trackScreen.id = 'live-tracking-screen';
+        trackScreen.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:9999; overflow-y:auto; padding:20px; display:none; flex-direction:column;';
+        document.body.appendChild(trackScreen);
+    }
+    
+    const timeNow = new Date();
+    timeNow.setMinutes(timeNow.getMinutes() + 30);
+    const estTime = timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    trackScreen.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <i class="fa-solid fa-arrow-left" style="color:#fff; font-size:24px; cursor:pointer;" onclick="document.getElementById('live-tracking-screen').style.display='none'"></i>
+            <span style="color:var(--z-gold); font-weight:800;">Order ${orderId}</span>
+            <i class="fa-solid fa-headset" style="color:#fff; font-size:20px;"></i>
+        </div>
+        
+        <div style="text-align:center; margin-bottom:30px;">
+            <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&q=80" style="width:100%; height:180px; object-fit:cover; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.8); margin-bottom:20px; border:2px solid #222;">
+            <h2 style="color:#fff; font-weight:900; margin:0;">Preparing your food</h2>
+            <p style="color:var(--z-neon); font-size:15px; font-weight:700; margin-top:5px;">Arriving by ${estTime}</p>
+        </div>
+        
+        <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
+            <div style="display:flex; gap:15px; margin-bottom:25px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                    <div style="width:20px; height:20px; background:var(--z-green); border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; font-size:10px;"><i class="fa-solid fa-check"></i></div>
+                    <div style="width:2px; height:40px; background:var(--z-green);"></div>
+                    <div style="width:20px; height:20px; background:var(--z-gold); border-radius:50%; box-shadow:0 0 10px var(--z-gold);"></div>
+                    <div style="width:2px; height:40px; background:#333;"></div>
+                    <div style="width:20px; height:20px; background:#333; border-radius:50%;"></div>
+                </div>
+                <div style="display:flex; flex-direction:column; justify-content:space-between; padding-top:2px; padding-bottom:2px;">
+                    <div><h4 style="color:#fff; margin:0; font-size:16px;">Order Placed</h4><p style="color:#888; font-size:12px; margin:0;">We have received your order</p></div>
+                    <div style="margin-top:28px;"><h4 style="color:var(--z-gold); margin:0; font-size:16px;">Preparing</h4><p style="color:#aaa; font-size:12px; margin:0;">The chef is cooking your food</p></div>
+                    <div style="margin-top:28px;"><h4 style="color:#555; margin:0; font-size:16px;">On the Way</h4><p style="color:#444; font-size:12px; margin:0;">Delivery partner assigned</p></div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top:20px; background:#111; padding:20px; border-radius:20px; border:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <span style="color:#888; font-size:12px;">Total Paid (${method})</span>
+                <h3 style="color:#fff; margin:0; font-size:20px;">₹${amount}</h3>
+            </div>
+            <button style="background:var(--z-red); color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800;">Receipt</button>
+        </div>
+    `;
+    
+    trackScreen.style.display = 'flex';
 }
 
 function openPage(id) {
@@ -361,14 +608,6 @@ function closePage(id) {
     if (p) { p.classList.remove('open'); setTimeout(() => p.style.display = 'none', 300); }
 }
 
-function updateGuests(v) { 
-    tableGuests += v; 
-    if (tableGuests < 1) tableGuests = 1; 
-    if (tableGuests > 20) tableGuests = 20;
-    document.getElementById('guest-count').innerText = `${tableGuests} Guests`; 
-}
-
-// Auth Rendering Trigger
 function renderAuthPage() {
     const c = document.getElementById('auth-container');
     if (!c) return;
@@ -378,7 +617,6 @@ function renderAuthPage() {
             <div style="text-align:center;">
                 <div style="width:110px; height:110px; margin:0 auto 15px; position:relative;">
                     <img src="${Auth.profilePic}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid var(--z-neon);">
-                    <div style="position:absolute; bottom:0; right:0; background:var(--z-gold); width:35px; height:35px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; box-shadow:0 4px 10px rgba(0,0,0,0.5);"><i class="fa-solid fa-camera"></i></div>
                 </div>
                 <h3 style="color:#fff; font-size:22px; font-weight:800;">${Auth.user}</h3>
                 <p style="color:#888; font-size:13px; font-weight:600;">+91 ${Auth.phone}</p>
@@ -393,10 +631,6 @@ function renderAuthPage() {
                     </div>
                     <p style="font-size:12px; color:#888; font-weight:600;">Reach 500 Coins for a FREE VIP Biryani!</p>
                 </div>
-                
-                <a href="${APP_CONFIG.instagram_url}" target="_blank" style="display:block; text-align:center; background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color:#fff; padding:16px; border-radius:14px; font-weight:800; margin-top:25px; text-decoration:none; box-shadow:0 8px 20px rgba(220, 39, 67, 0.4);">
-                    <i class="fa-brands fa-instagram" style="font-size:20px; margin-right:8px;"></i> Follow @kavyafamilyrestaurant
-                </a>
                 
                 <button class="z-primary-btn mt-25" style="background:#1a1a1a; border:1px solid #333; color:#fff;" onclick="Auth.logout()">Logout Safely</button>
             </div>`;
