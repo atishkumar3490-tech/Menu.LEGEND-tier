@@ -5,17 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Kavya Family Restaurant - Ultimate Zomato Clone</title>
     
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Modular Stylesheets -->
     <link rel="stylesheet" href="core.css">
     <link rel="stylesheet" href="premium.css">
 </head>
 <body class="zomato-body">
 
-    <!-- 1. CINEMATIC GOLDEN SPLASH SCREEN -->
     <div id="splash-screen" class="z-splash">
         <div class="z-splash-content">
             <h1 class="z-brand-3d">KAVYA</h1>
@@ -24,13 +21,11 @@
         </div>
     </div>
 
-    <!-- 2. GLOBAL APPLE-STYLE TOAST -->
     <div id="toast-container" class="z-toast-hidden">
         <i id="toast-icon" class="fa-solid fa-circle-check"></i>
         <span id="toast-message">Notification</span>
     </div>
 
-    <!-- 3. 3D COIN REWARD POPUP -->
     <div id="coin-celebration" class="z-overlay hidden">
         <div class="z-celeb-card z-bounce">
             <div class="z-coin-3d"><i class="fa-solid fa-coins"></i></div>
@@ -40,7 +35,6 @@
         </div>
     </div>
 
-    <!-- 4. FLAVOR SLIDER BOTTOM SHEET -->
     <div id="flavor-slider-modal" class="z-overlay hidden">
         <div class="z-bottom-sheet z-slide-up">
             <div class="z-sheet-handle"></div>
@@ -56,15 +50,11 @@
     </div>
 
 
-    <!-- ==========================================
-         PAGE 1: DELIVERY HOME
-         ========================================== -->
     <div id="home-page" class="z-page active-page">
-        <!-- Zomato Red Sticky Header Zone -->
         <div class="z-red-header-zone">
             <header class="z-sticky-nav" id="main-header">
                 <div class="z-header-row">
-                    <div class="z-loc-box" onclick="requestLocation()">
+                    <div class="z-loc-box" onclick="requestHighAccuracyGPS()">
                         <i class="fa-solid fa-location-dot z-loc-pin"></i>
                         <div class="z-loc-text">
                             <span class="z-loc-title" id="user-location">Ramkrishna Nagar <i class="fa-solid fa-chevron-down text-xs"></i></span>
@@ -81,7 +71,6 @@
                     </div>
                 </div>
 
-                <!-- Sticky Search Bar with Mic -->
                 <div class="z-search-wrap">
                     <div class="z-search-bar">
                         <i class="fa-solid fa-magnifying-glass z-search-ico"></i>
@@ -92,38 +81,54 @@
                 </div>
             </header>
 
-            <!-- 🛠️ BUG FIXED HERE: Added missing greeting div! -->
             <div id="dynamic-greeting" class="bespoke-greeting"></div>
 
-            <!-- Zomato Style Promotional Banner -->
-            <div class="z-banner-wrap">
-                <div class="z-promo-card">
+            <div class="z-banner-wrap" id="banner-slider">
+                <div class="z-promo-card slide active-slide" id="banner-1">
                     <div class="z-shine"></div>
-                    <h2 class="z-banner-title">ITEMS AT 50% OFF</h2>
-                    <p class="z-banner-sub">with FREE Delivery above ₹99</p>
+                    <div class="banner-content">
+                        <h2 class="z-banner-title">10% OFF ON FIRST ORDER</h2>
+                        <p class="z-banner-sub">Experience the authentic taste of Kavya</p>
+                    </div>
+                </div>
+                <div class="z-promo-card slide hidden-slide" id="banner-2">
+                    <div class="z-shine"></div>
+                    <div class="banner-content">
+                        <h2 class="z-banner-title">DINING CARNIVAL 🍽️</h2>
+                        <p class="z-banner-sub">Book a table & get ₹175 extra OFF</p>
+                    </div>
+                </div>
+                <div class="z-promo-card slide hidden-slide" id="banner-3">
+                    <div class="z-shine"></div>
+                    <div class="banner-content">
+                        <h2 class="z-banner-title" style="color:var(--z-gold);">EARN KAVYA COINS</h2>
+                        <p class="z-banner-sub" style="color:#ccc;">Pay upto 10% of your bill using coins</p>
+                    </div>
                 </div>
             </div>
+            
         </div> 
 
-        <!-- Horizontal Scroll Category Bar -->
         <div class="z-cat-section">
             <div class="z-cat-scroll" id="category-scroll-container">
-                <!-- Injected via JS -->
-            </div>
+                </div>
         </div>
 
-        <!-- Food Feed (Wide HD Cards) -->
         <main class="z-feed-container" id="menu-items-container">
-            <!-- Injected via JS -->
-        </main>
+            </main>
         
-        <div class="z-spacer"></div>
+        <div class="legend-watermark-container">
+            <div class="legend-watermark-box">
+                <span class="legend-watermark-text">
+                    <i class="fa-solid fa-bolt legend-bolt-icon"></i>
+                    Powered by <strong class="legend-brand-name">Legend</strong> 👑
+                </span>
+            </div>
+        </div>
+        
     </div> 
 
 
-    <!-- ==========================================
-         PAGE 2: DINING & TABLE BOOKING
-         ========================================== -->
     <div id="dining-page" class="z-page right-slide-page">
         <header class="z-sub-header">
             <i class="fa-solid fa-arrow-left z-back" onclick="closePage('dining-page')"></i>
@@ -153,16 +158,13 @@
                     <label class="z-label text-muted mt-15" style="display:block;">Select Time Slot</label>
                     <input type="time" class="z-input mt-5" value="19:30">
                     
-                    <button class="z-gold-btn mt-20" onclick="showToast('Table Request Sent to Kavya Admin!')">Confirm Reservation</button>
+                    <button class="z-gold-btn mt-20" onclick="UI.showToast('Table Request Sent to Kavya Admin!')">Confirm Reservation</button>
                 </div>
             </div>
         </div>
     </div>
 
 
-    <!-- ==========================================
-         PAGE 3: CART & CHECKOUT
-         ========================================== -->
     <div id="cart-page" class="z-page right-slide-page">
         <header class="z-sub-header">
             <i class="fa-solid fa-arrow-left z-back" onclick="closePage('cart-page')"></i>
@@ -171,14 +173,10 @@
         </header>
         
         <div class="z-scroll-content p-20" id="cart-items-container">
-            <!-- Injected via JS -->
-        </div>
+            </div>
     </div>
 
 
-    <!-- ==========================================
-         PAGE 4: VIP PROFILE & AUTH
-         ========================================== -->
     <div id="login-page" class="z-page right-slide-page">
         <header class="z-sub-header">
             <i class="fa-solid fa-arrow-left z-back" onclick="closePage('login-page')"></i>
@@ -187,14 +185,10 @@
         </header>
         
         <div class="z-scroll-content p-20" id="auth-container">
-            <!-- Injected via JS -->
-        </div>
+            </div>
     </div>
 
 
-    <!-- ==========================================
-         ZOMATO BOTTOM TASKBAR
-         ========================================== -->
     <nav class="z-taskbar">
         <div class="z-nav-item active" onclick="openPage('home-page')">
             <i class="fa-solid fa-house"></i>
@@ -211,7 +205,6 @@
         </div>
     </nav>
 
-    <!-- Modular Scripts -->
     <script src="data.js"></script>
     <script src="ui.js"></script>
     <script src="app.js"></script>
