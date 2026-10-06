@@ -2,7 +2,7 @@
    APP.JS - Enterprise State Management, Cart & Firebase Engine
    ========================================================== */
 
-// 🔥 FIREBASE ENTERPRISE ENGINE (Dynamic Safe Load)
+// 🔥 FIREBASE ENTERPRISE ENGINE
 let db = null;
 const firebaseConfig = {
     apiKey: "AIzaSyBsP14Fn5iyr_y8KVODcBPxFxPyrSyzAzQ",
@@ -84,7 +84,6 @@ class CartEngine {
     }
 
     addItem(menuItem, variantSize, exactPrice, spiceLevel) {
-        // Unique identification by Item + Variant + Spice
         const existingIdx = this.items.findIndex(i => i.id === menuItem.id && i.variant === variantSize && i.spice === spiceLevel);
         if (existingIdx > -1) {
             this.items[existingIdx].quantity += 1;
@@ -193,7 +192,6 @@ function renderMenu() {
     }
 
     filtered.forEach(item => {
-        // Find total quantity of this item across all variants in cart
         const cartItems = Cart.items.filter(i => i.id === item.id);
         const totalQty = cartItems.reduce((sum, i) => sum + i.quantity, 0);
         
@@ -225,7 +223,7 @@ function renderMenu() {
     });
 }
 
-// 🧠 SMART ADD LOGIC (Direct vs Popup)
+// 🧠 SMART ADD LOGIC
 function addDirectly(id) {
     if (!Auth.user) { UI.showToast("Login required to order!", "error"); return openPage('login-page'); }
     const item = menuItems.find(i => i.id === id);
@@ -251,7 +249,6 @@ function openSmartSelector(id) {
     if (!Auth.user) { UI.showToast("Login required to order!", "error"); return openPage('login-page'); }
     const item = menuItems.find(i => i.id === id);
     
-    // Create popup dynamically if it doesn't exist
     let modal = document.getElementById('dynamic-smart-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -318,7 +315,6 @@ function confirmSmartAdd(id) {
     const item = menuItems.find(i => i.id === id);
     const modal = document.getElementById('dynamic-smart-modal');
     
-    // Get selected variant
     let variantSize = 'Regular', exactPrice = item.price;
     if (item.variants && item.variants.length > 1) {
         const activeVariant = modal.querySelector('div[data-size].active');
@@ -331,7 +327,6 @@ function confirmSmartAdd(id) {
         exactPrice = item.variants[0].price;
     }
 
-    // Get selected spice
     let spiceLevel = 'None';
     if (item.needsSpice) {
         const activeSpice = modal.querySelector('div[data-spice].active');
@@ -525,7 +520,6 @@ async function placeOrder(method) {
         }
     }
 
-    // Clean up and start Live Tracking
     Cart.clearCart();
     const earned = Math.floor(Math.random() * 50) + 10;
     Auth.earnCoins(earned);
@@ -534,11 +528,10 @@ async function placeOrder(method) {
     updateCartBadge(); 
     renderMenu();
     
-    // Launch Tracking Screen
     launchLiveTracking(orderId, finalTotal, method);
 }
 
-// ⏱️ LIVE ORDER TRACKING SCREEN (Point 8)
+// ⏱️ LIVE ORDER TRACKING SCREEN
 function launchLiveTracking(orderId, amount, method) {
     let trackScreen = document.getElementById('live-tracking-screen');
     if(!trackScreen) {
