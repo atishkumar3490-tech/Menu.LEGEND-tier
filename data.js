@@ -22,15 +22,15 @@ const GITHUB_BASE = "https://raw.githubusercontent.com/atishkumar3490-tech/Menu.
 
 const categories = [
     { id: 'All', name: 'All', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80' },
-    { id: 'Chicken', name: 'Chicken', img: `${GITHUB_BASE}cat-chicken-1.jpg` },
-    { id: 'Kebab', name: 'Kebab', img: `${GITHUB_BASE}cat-starter-1.jpg` },
-    { id: 'Veg Curry', name: 'Veg Curry', img: `${GITHUB_BASE}cat-curry-1.jpg` },
-    { id: 'Paneer', name: 'Paneer', img: `${GITHUB_BASE}cat-paneer-1.jpg` },
-    { id: 'Rice', name: 'Rice', img: `${GITHUB_BASE}cat-biryani-1.jpg` },
-    { id: 'Roti', name: 'Breads', img: `${GITHUB_BASE}cat-rolls-1.jpg` },
-    { id: 'Sweets', name: 'Sweets', img: `${GITHUB_BASE}cat-sweet-1.jpg` },
-    { id: 'Cold Drinks', name: 'Cold Drinks', img: `${GITHUB_BASE}cat-bevrages-1.jpg` } // Renamed for clarity
+    { id: 'Biryani', name: 'Biryani', img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&q=80' }, 
+    { id: 'Chicken', name: 'Chicken', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=200&q=80' }, 
+    { id: 'Kebab', name: 'Kebab', img: 'https://images.unsplash.com/photo-1599921841143-819065a55cc6?w=200&q=80' }, 
+    { id: 'Paneer', name: 'Paneer', img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=200&q=80' }, 
+    { id: 'Veg Curry', name: 'Veg Curry', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80' }, 
+    { id: 'Rolls', name: 'Rolls', img: 'https://images.unsplash.com/photo-1626779836928-8671ebfb447b?w=200&q=80' }, 
+    { id: 'Cold Drinks', name: 'Drinks', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200&q=80' } 
 ];
+
 
 // 🍔 FULL ENTERPRISE MENU DATABASE (Mapped accurately with Real Menu Image & Smart Logic)
 const menuItems = [
