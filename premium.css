@@ -252,3 +252,46 @@
     transition: border-color 0.3s, box-shadow 0.3s; 
 }
 .z-input:focus { border-color: var(--z-red); box-shadow: 0 0 15px rgba(226,55,68,0.2); }
+
+
+/* ==========================================================
+   🔥 NEW UPDATES: SLIDER BANNERS & WATERMARK
+   ========================================================== */
+
+/* --- PREMIUM SLIDER BANNERS --- */
+#banner-1 { background: linear-gradient(135deg, #e52d27 0%, #b31217 100%); }
+#banner-2 { background: linear-gradient(135deg, #4b134f 0%, #c94b4b 100%); }
+#banner-3 { background: linear-gradient(135deg, #111 0%, #2a2a2a 100%); border: 1px solid var(--z-gold); }
+
+.hidden-slide { display: none; }
+.banner-content { position: relative; z-index: 2; }
+
+/* --- "POWERED BY LEGEND" WATERMARK --- */
+.legend-watermark-container { 
+    text-align: center; 
+    padding: 30px 20px 80px 20px; 
+}
+.legend-watermark-box { 
+    display: inline-block; 
+    padding: 10px 20px; 
+    background: linear-gradient(145deg, #0f172a, #1e293b); 
+    border-radius: 50px; 
+    border: 1px solid #3b82f6; 
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); 
+}
+.legend-watermark-text { 
+    color: #60a5fa; 
+    font-weight: 600; 
+    font-size: 12px; 
+    letter-spacing: 1px; 
+    text-transform: uppercase; 
+}
+.legend-bolt-icon { 
+    color: #fbbf24; 
+    margin-right: 5px; 
+}
+.legend-brand-name { 
+    color: #fff; 
+    font-weight: 900; 
+    text-shadow: 0 0 8px rgba(59, 130, 246, 0.8); 
+}
