@@ -662,7 +662,7 @@ window.requestHighAccuracyGPS = function() {
     }
 };
 
-// 🚀 FIREBASE ORDER PUSH & LIVE TRACKING TRIGGER
+// 🚀 FIREBASE ORDER PUSH, LIVE TRACKING & DIRECT UPI TRIGGER
 window.placeOrder = async function(method) {
     const add = document.getElementById('cart-address').value;
     
@@ -685,12 +685,26 @@ window.placeOrder = async function(method) {
         Auth.deductCoins(coinsUsed);
         finalTotal -= coinsUsed;
     }
-
-    if (method === 'UPI') {
-        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Connecting to secure UPI gateway...");
-    }
     
     const orderId = 'ORD' + Math.floor(Math.random() * 900000 + 100000);
+
+    // ⚡ DIRECT UPI DEEP LINKING (Opens PhonePe / GPay / Paytm automatically)
+    if (method === 'UPI') {
+        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Opening Payment App...");
+        
+        // Ensure APP_CONFIG exists and has the UPI ID
+        const upiId = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.upi_id) ? APP_CONFIG.upi_id : 'merchant@upi';
+        const merchantName = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.restaurant_name) ? APP_CONFIG.restaurant_name : 'Kavya Restaurant';
+        
+        // Create the UPI Intent URL
+        const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${finalTotal}&cu=INR&tn=Order_${orderId}`;
+        
+        // Trigger the payment app
+        window.location.href = upiLink;
+        
+        // NOTE: We don't stop the code here. The order will still be saved to Firebase as "Unpaid/Pending" 
+        // so the Admin can track it even if the customer cancels the payment midway.
+    }
 
     // 🔥 SAVE ACTIVE ORDER TO LOCALSTORAGE FOR PERSISTENT BANNER
     localStorage.setItem('kavya_active_order', JSON.stringify({id: orderId, amount: finalTotal, method: method}));
@@ -708,7 +722,7 @@ window.placeOrder = async function(method) {
                 address: Cart.address, 
                 gpsLink: Cart.gpsLink || 'Not Provided',
                 coinsRedeemed: coinsUsed,
-                status: 'Preparing',
+                status: 'Preparing', // Admin will change this later
                 timestamp: window.fbServerTimestamp()
             });
         } catch(e) {
@@ -717,7 +731,6 @@ window.placeOrder = async function(method) {
     }
 
     Cart.clearCart();
-    
     const earned = Math.floor(Math.random() * 50) + 10;
     Auth.earnCoins(earned);
     
