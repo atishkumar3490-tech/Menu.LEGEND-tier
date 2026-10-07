@@ -39,12 +39,15 @@ const firebaseConfig = {
 async function initFirebase() {
     try {
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js");
-        const { getFirestore, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+        const { getFirestore, collection, addDoc, serverTimestamp, query, where, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.fbAddDoc = addDoc;
         window.fbCollection = collection;
         window.fbServerTimestamp = serverTimestamp;
+        window.fbQuery = query;
+        window.fbWhere = where;
+        window.fbOnSnapshot = onSnapshot;
         console.log("🔥 Firebase DB Connected Successfully!");
     } catch (e) {
         console.error("Firebase Engine Error:", e);
@@ -217,7 +220,7 @@ window.showActiveOrderBanner = function() {
         // Placed just above the Zomato bottom navbar
         banner.style.cssText = 'position:fixed; bottom:80px; left:15px; right:15px; background:linear-gradient(135deg, #00c6ff, #0072ff); color:#fff; padding:15px 20px; border-radius:16px; font-weight:800; display:flex; justify-content:space-between; align-items:center; z-index:999; box-shadow:0 8px 25px rgba(0, 114, 255, 0.4); cursor:pointer; font-size: 14px;';
         
-        banner.onclick = () => launchLiveTracking(order.id, order.amount, order.method);
+        banner.onclick = () => launchLiveTracking(order.id);
         document.body.appendChild(banner);
     }
     banner.innerHTML = `
@@ -688,22 +691,13 @@ window.placeOrder = async function(method) {
     
     const orderId = 'ORD' + Math.floor(Math.random() * 900000 + 100000);
 
-    // ⚡ DIRECT UPI DEEP LINKING (Opens PhonePe / GPay / Paytm automatically)
+    // ⚡ DIRECT UPI DEEP LINKING
     if (method === 'UPI') {
         if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Opening Payment App...");
-        
-        // Ensure APP_CONFIG exists and has the UPI ID
         const upiId = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.upi_id) ? APP_CONFIG.upi_id : 'merchant@upi';
         const merchantName = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.restaurant_name) ? APP_CONFIG.restaurant_name : 'Kavya Restaurant';
-        
-        // Create the UPI Intent URL
         const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${finalTotal}&cu=INR&tn=Order_${orderId}`;
-        
-        // Trigger the payment app
         window.location.href = upiLink;
-        
-        // NOTE: We don't stop the code here. The order will still be saved to Firebase as "Unpaid/Pending" 
-        // so the Admin can track it even if the customer cancels the payment midway.
     }
 
     // 🔥 SAVE ACTIVE ORDER TO LOCALSTORAGE FOR PERSISTENT BANNER
@@ -722,7 +716,7 @@ window.placeOrder = async function(method) {
                 address: Cart.address, 
                 gpsLink: Cart.gpsLink || 'Not Provided',
                 coinsRedeemed: coinsUsed,
-                status: 'Preparing', // Admin will change this later
+                status: 'Preparing', 
                 timestamp: window.fbServerTimestamp()
             });
         } catch(e) {
@@ -739,11 +733,11 @@ window.placeOrder = async function(method) {
     renderMenu();
     
     showActiveOrderBanner();
-    launchLiveTracking(orderId, finalTotal, method);
+    launchLiveTracking(orderId);
 };
 
-// ⏱️ LIVE ORDER TRACKING SCREEN (Now hides cleanly without reload)
-window.launchLiveTracking = function(orderId, amount, method) {
+// ⏱️ REAL-TIME LIVE ORDER TRACKING SCREEN (SYNCED WITH FIREBASE)
+window.launchLiveTracking = function(orderId) {
     let trackScreen = document.getElementById('live-tracking-screen');
     if(!trackScreen) {
         trackScreen = document.createElement('div');
@@ -752,50 +746,83 @@ window.launchLiveTracking = function(orderId, amount, method) {
         document.body.appendChild(trackScreen);
     }
     
-    const timeNow = new Date();
-    timeNow.setMinutes(timeNow.getMinutes() + 30);
-    const estTime = timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-    trackScreen.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <i class="fa-solid fa-arrow-left" style="color:#fff; font-size:24px; cursor:pointer;" onclick="document.getElementById('live-tracking-screen').style.display='none'"></i>
-            <span style="color:var(--z-gold); font-weight:800;">Order ${orderId}</span>
-            <i class="fa-solid fa-headset" style="color:#fff; font-size:20px;"></i>
-        </div>
-        
-        <div style="text-align:center; margin-bottom:30px;">
-            <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&q=80" style="width:100%; height:180px; object-fit:cover; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.8); margin-bottom:20px; border:2px solid #222;">
-            <h2 style="color:#fff; font-weight:900; margin:0;">Preparing your food</h2>
-            <p style="color:var(--z-neon); font-size:15px; font-weight:700; margin-top:5px;">Arriving by ${estTime}</p>
-        </div>
-        
-        <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
-            <div style="display:flex; gap:15px; margin-bottom:25px;">
-                <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
-                    <div style="width:20px; height:20px; background:var(--z-green); border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; font-size:10px;"><i class="fa-solid fa-check"></i></div>
-                    <div style="width:2px; height:40px; background:var(--z-green);"></div>
-                    <div style="width:20px; height:20px; background:var(--z-gold); border-radius:50%; box-shadow:0 0 10px var(--z-gold);"></div>
-                    <div style="width:2px; height:40px; background:#333;"></div>
-                    <div style="width:20px; height:20px; background:#333; border-radius:50%;"></div>
-                </div>
-                <div style="display:flex; flex-direction:column; justify-content:space-between; padding-top:2px; padding-bottom:2px;">
-                    <div><h4 style="color:#fff; margin:0; font-size:16px;">Order Placed</h4><p style="color:#888; font-size:12px; margin:0;">We have received your order</p></div>
-                    <div style="margin-top:28px;"><h4 style="color:var(--z-gold); margin:0; font-size:16px;">Preparing</h4><p style="color:#aaa; font-size:12px; margin:0;">The chef is cooking your food</p></div>
-                    <div style="margin-top:28px;"><h4 style="color:#555; margin:0; font-size:16px;">On the Way</h4><p style="color:#444; font-size:12px; margin:0;">Delivery partner assigned</p></div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="margin-top:20px; background:#111; padding:20px; border-radius:20px; border:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <span style="color:#888; font-size:12px;">Total Paid (${method})</span>
-                <h3 style="color:#fff; margin:0; font-size:20px;">₹${amount}</h3>
-            </div>
-            <button style="background:var(--z-red); color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800;" onclick="document.getElementById('live-tracking-screen').style.display='none'">Back to Home</button>
-        </div>
-    `;
-    
     trackScreen.style.display = 'flex';
+    
+    // Show Loading state while fetching real-time data
+    trackScreen.innerHTML = `<div style="color:var(--z-gold); text-align:center; margin-top:100px; font-size:20px; font-weight:800;"><i class="fa-solid fa-circle-notch fa-spin"></i> Syncing Live Status...</div>`;
+
+    if(window.db && window.fbQuery && window.fbOnSnapshot) {
+        const q = window.fbQuery(window.fbCollection(window.db, "orders"), window.fbWhere("orderId", "==", orderId));
+        
+        window.fbOnSnapshot(q, (snapshot) => {
+            if(!snapshot.empty) {
+                const order = snapshot.docs[0].data();
+                
+                // Color Logic based on Real-Time Status
+                let prepColor = (order.status === 'Preparing' || order.status === 'Out for Delivery' || order.status === 'Delivered') ? 'var(--z-gold)' : '#333';
+                let outColor = (order.status === 'Out for Delivery' || order.status === 'Delivered') ? 'var(--z-gold)' : '#333';
+                
+                // Render Customer's Ordered Items
+                let itemsHtml = '<div style="margin-top:15px; border-top:1px dashed #333; padding-top:15px;">';
+                order.items.forEach(item => {
+                    itemsHtml += `<div style="display:flex; justify-content:space-between; color:#ccc; font-size:13px; margin-bottom:8px; font-weight:700;"><span>${item.quantity}x ${item.name}</span><span style="color:#fff;">₹${item.price * item.quantity}</span></div>`;
+                });
+                itemsHtml += '</div>';
+
+                // Auto Clean-up if Admin marks as Delivered
+                if (order.status === 'Delivered') {
+                    localStorage.removeItem('kavya_active_order');
+                    const banner = document.getElementById('active-order-banner');
+                    if(banner) banner.remove();
+                }
+
+                trackScreen.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <i class="fa-solid fa-arrow-left" style="color:#fff; font-size:24px; cursor:pointer;" onclick="document.getElementById('live-tracking-screen').style.display='none'"></i>
+                        <span style="color:var(--z-gold); font-weight:800;">Order ${order.orderId}</span>
+                        <i class="fa-solid fa-headset" style="color:#fff; font-size:20px;"></i>
+                    </div>
+                    
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&q=80" style="width:100%; height:160px; object-fit:cover; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.8); margin-bottom:15px; border:2px solid #222;">
+                        <h2 style="color:#fff; font-weight:900; margin:0;">${order.status === 'Delivered' ? 'Order Delivered! 🎉' : 'Track Your Order'}</h2>
+                        <p style="color:var(--z-neon); font-size:14px; font-weight:700; margin-top:5px;">${order.status === 'Delivered' ? 'Enjoy your delicious meal!' : 'Status: ' + order.status}</p>
+                    </div>
+                    
+                    <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222; margin-bottom:20px;">
+                        <div style="display:flex; gap:15px;">
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                                <div style="width:20px; height:20px; background:var(--z-green); border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; font-size:10px;"><i class="fa-solid fa-check"></i></div>
+                                <div style="width:2px; height:30px; background:var(--z-green);"></div>
+                                <div style="width:20px; height:20px; background:${prepColor}; border-radius:50%;"></div>
+                                <div style="width:2px; height:30px; background:${prepColor === '#333' ? '#333' : 'var(--z-gold)'};"></div>
+                                <div style="width:20px; height:20px; background:${outColor}; border-radius:50%;"></div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; justify-content:space-between; padding-top:2px; padding-bottom:2px; width:100%;">
+                                <div><h4 style="color:#fff; margin:0; font-size:15px;">Order Placed</h4></div>
+                                <div style="margin-top:20px;"><h4 style="color:${prepColor === '#333' ? '#888' : '#fff'}; margin:0; font-size:15px;">Preparing</h4></div>
+                                <div style="margin-top:20px;"><h4 style="color:${outColor === '#333' ? '#888' : '#fff'}; margin:0; font-size:15px;">On the Way</h4></div>
+                            </div>
+                        </div>
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div style="margin-top:auto; background:#111; padding:20px; border-radius:20px; border:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#888; font-size:12px;">Total Paid (${order.paymentMethod})</span>
+                            <h3 style="color:#fff; margin:0; font-size:20px;">₹${order.totalAmount}</h3>
+                        </div>
+                        <button style="background:${order.status === 'Delivered' ? 'var(--z-green)' : 'var(--z-red)'}; color:${order.status === 'Delivered' ? '#000' : '#fff'}; border:none; padding:12px 20px; border-radius:10px; font-weight:800;" onclick="document.getElementById('live-tracking-screen').style.display='none'; if('${order.status}' === 'Delivered') location.reload();">
+                            ${order.status === 'Delivered' ? 'Done' : 'Close'}
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Fallback if Firebase hasn't loaded yet
+        trackScreen.innerHTML = `<div style="padding:20px; color:#fff;">Status: Preparing...</div>`;
+    }
 };
 
 window.openPage = function(id) {
@@ -911,7 +938,6 @@ window.cancelReservation = function() {
     if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Reservation request cancelled.");
     location.reload(); // Reload to show the booking form again
 };
-
 
 function renderAuthPage() {
     const c = document.getElementById('auth-container');
