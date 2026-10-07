@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard - Kavya Restaurant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
+        body { background: #050505; color: #fff; padding-bottom: 80px; }
+        
+        /* LOGIN SCREEN */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
+        .pin-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid #333; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .pin-input { width: 100%; padding: 15px; font-size: 24px; text-align: center; border-radius: 12px; border: 2px solid #d4af37; background: #000; color: #d4af37; font-weight: 900; letter-spacing: 10px; margin-bottom: 20px; outline: none; }
+        .login-btn { background: #d4af37; color: #000; font-weight: 900; font-size: 18px; padding: 15px; border: none; border-radius: 12px; width: 100%; cursor: pointer; }
+        
+        /* DASHBOARD HEADER */
+        header { background: #111; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100; }
+        .brand { font-size: 20px; font-weight: 900; color: #fff; }
+        .brand span { color: #d4af37; }
+        
+        /* TABS */
+        .tabs { display: flex; background: #111; padding: 10px; border-bottom: 1px solid #222; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; font-weight: 800; color: #888; background: transparent; border: none; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: #d4af37; border-bottom: 3px solid #d4af37; }
+        
+        /* ORDER CARD */
+        .admin-card { background: #111; margin: 15px; border-radius: 16px; border: 1px solid #333; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px; }
+        .order-id { font-size: 16px; font-weight: 900; color: #d4af37; }
+        .time-badge { font-size: 11px; background: #222; padding: 4px 8px; border-radius: 6px; color: #aaa; }
+        
+        .customer-info { margin-bottom: 15px; }
+        .c-name { font-size: 18px; font-weight: 800; color: #fff; }
+        .c-phone { font-size: 14px; color: #aaa; margin-top: 2px; }
+        .c-gps { font-size: 13px; color: #00c6ff; margin-top: 5px; font-weight: 700; text-decoration: none; display: inline-block; }
+        .c-address { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; background: #0a0a0a; padding: 8px; border-radius: 8px; border: 1px solid #222;}
+        
+        .item-list { background: #0a0a0a; padding: 10px; border-radius: 8px; border: 1px solid #222; margin-bottom: 15px; }
+        .item-row { display: flex; justify-content: space-between; font-size: 14px; color: #ddd; margin-bottom: 5px; font-weight: 600; }
+        .item-meta { font-size: 11px; color: #777; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #222; }
+        
+        .finance-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .total-amt { font-size: 20px; font-weight: 900; color: #39ff14; }
+        .pay-method { font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 4px; }
+        .pay-cod { background: #333; color: #fff; }
+        .pay-upi { background: rgba(226,55,68,0.2); color: #e23744; border: 1px solid #e23744; }
+        
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 13px; border: none; cursor: pointer; text-align: center; }
+        .btn-whatsapp { background: #25D366; color: #000; flex-basis: 100%; margin-bottom: 5px; }
+        .btn-status { background: #d4af37; color: #000; }
+        .btn-paid { background: #39ff14; color: #000; }
+        .btn-outline { background: transparent; border: 1px solid #555; color: #fff; }
+
+        /* ALARM UI */
+        #alarm-banner { display: none; background: #e23744; color: #fff; padding: 15px; text-align: center; font-weight: 900; position: fixed; bottom: 0; width: 100%; z-index: 1000; box-shadow: 0 -5px 20px rgba(226,55,68,0.5); cursor: pointer; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- 🔊 LOUD ALARM SOUND FOR NEW ORDERS -->
+    <audio id="order-alarm" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop preload="auto"></audio>
+
+    <!-- 🔐 LOGIN SCREEN -->
+    <div id="login-screen">
+        <h1 class="brand" style="font-size: 32px; margin-bottom: 10px;">KAVYA <span>ADMIN</span></h1>
+        <p style="color: #888; font-size: 14px; margin-bottom: 30px;">Authorized Personnel Only</p>
+        <div class="pin-box">
+            <h3 style="color: #fff; margin-bottom: 20px;">Enter Access PIN</h3>
+            <input type="password" id="admin-pin" class="pin-input" maxlength="4" placeholder="••••" autocomplete="off">
+            <button class="login-btn" onclick="verifyPin()">UNLOCK DASHBOARD <i class="fa-solid fa-lock-open"></i></button>
+        </div>
+    </div>
+
+    <!-- 📱 MAIN DASHBOARD -->
+    <div id="dashboard-screen" class="hidden">
+        <header>
+            <div class="brand">KAVYA <span>COMMAND</span></div>
+            <button style="background: transparent; color: #e23744; border: none; font-size: 20px;" onclick="location.reload()"><i class="fa-solid fa-power-off"></i></button>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-orders" onclick="switchTab('orders')">Live Orders <span id="order-badge" style="background:#e23744;color:#fff;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:5px;">0</span></button>
+            <button class="tab-btn" id="tab-dining" onclick="switchTab('dining')">Dining Req</button>
+        </div>
+
+        <!-- ORDERS VIEW -->
+        <div id="view-orders">
+            <div id="orders-container">
+                <!-- Orders will inject here -->
+                <p style="text-align: center; color: #888; margin-top: 50px;">Waiting for new orders...</p>
+            </div>
+        </div>
+
+        <!-- DINING VIEW -->
+        <div id="view-dining" class="hidden">
+            <div id="dining-container">
+                <!-- Dining requests will inject here -->
+                <p style="text-align: center; color: #888; margin-top: 50px;">No dining requests currently.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚨 NEW ORDER ALARM BANNER -->
+    <div id="alarm-banner" onclick="stopAlarm()">
+        <i class="fa-solid fa-bell fa-shake" style="font-size: 24px; margin-right: 10px;"></i> 
+        NEW ORDER RECEIVED! TAP TO MUTE
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBsP14Fn5iyr_y8KVODcBPxFxPyrSyzAzQ",
+            authDomain: "kavya-rsturant.firebaseapp.com",
+            projectId: "kavya-rsturant",
+            storageBucket: "kavya-rsturant.firebasestorage.app",
+            messagingSenderId: "828437773467",
+            appId: "1:828437773467:web:914fc4b67de7b96d55da3e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // ⚙️ ADMIN CONFIGURATION (EDIT HERE)
+        // ==========================================
+        const ADMIN_PIN = "8881"; // <--- CHANGE PASSWORD HERE IF NEEDED
+        let alarmedOrders = new Set();
+        let alarmAudio = document.getElementById('order-alarm');
+
+        // --- LOGIN LOGIC ---
+        window.verifyPin = function() {
+            const val = document.getElementById('admin-pin').value;
+            if(val === ADMIN_PIN) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                startOrderListener();
+                startDiningListener();
+            } else {
+                alert("Incorrect PIN!");
+            }
+        };
+
+        window.switchTab = function(tab) {
+            document.getElementById('tab-orders').classList.remove('active');
+            document.getElementById('tab-dining').classList.remove('active');
+            document.getElementById('view-orders').classList.add('hidden');
+            document.getElementById('view-dining').classList.add('hidden');
+            
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+        };
+
+        // --- ALARM LOGIC ---
+        function triggerAlarm(orderId) {
+            if(!alarmedOrders.has(orderId)) {
+                alarmAudio.play().catch(e => console.log("Auto-play blocked by browser."));
+                document.getElementById('alarm-banner').style.display = 'block';
+                alarmedOrders.add(orderId);
+            }
+        }
+
+        window.stopAlarm = function() {
+            alarmAudio.pause();
+            alarmAudio.currentTime = 0;
+            document.getElementById('alarm-banner').style.display = 'none';
+        };
+
+        // ==========================================
+        // 🍔 1. LIVE ORDERS FETCH & RENDER
+        // ==========================================
+        function startOrderListener() {
+            const q = query(collection(db, "orders"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('orders-container');
+                container.innerHTML = '';
+                let activeCount = 0;
+
+                snapshot.forEach((docSnap) => {
+                    const order = docSnap.data();
+                    const docId = docSnap.id;
+                    
+                    // Skip delivered/cancelled from main view to keep it clean
+                    if(order.status === 'Delivered' || order.status === 'Cancelled') return;
+                    activeCount++;
+
+                    // Trigger alarm for fresh orders
+                    if(order.status === 'Preparing') triggerAlarm(order.orderId);
+
+                    // Render Items
+                    let itemsHtml = '';
+                    order.items.forEach(item => {
+                        let meta = item.variant;
+                        if(item.spice !== 'None') meta += ` | Spice: ${item.spice}`;
+                        itemsHtml += `
+                            <div class="item-row"><span>${item.quantity}x ${item.name}</span><span>₹${item.price * item.quantity}</span></div>
+                            <div class="item-meta">${meta}</div>
+                        `;
+                    });
+
+                    // Payment Badge Logic
+                    let isPaid = order.paymentStatus === 'Paid';
+                    let payBtnHtml = '';
+                    if(order.paymentMethod === 'UPI' && !isPaid) {
+                        payBtnHtml = `<button class="btn btn-paid" onclick="markPaid('${docId}')"><i class="fa-solid fa-check-double"></i> Verify UPI Payment</button>`;
+                    } else if (order.paymentMethod === 'COD' && !isPaid) {
+                        payBtnHtml = `<button class="btn btn-outline" onclick="markPaid('${docId}')"><i class="fa-solid fa-hand-holding-dollar"></i> Mark Cash Received</button>`;
+                    }
+
+                    // Status Button Logic (Preparing -> Out For Delivery -> Delivered)
+                    let statusBtnHtml = '';
+                    if(order.status === 'Preparing') {
+                        statusBtnHtml = `<button class="btn btn-status" onclick="updateStatus('${docId}', 'Out for Delivery')">Send Out For Delivery 🛵</button>`;
+                    } else if (order.status === 'Out for Delivery') {
+                        statusBtnHtml = `<button class="btn btn-status" style="background:#555; color:#fff;" onclick="updateStatus('${docId}', 'Delivered')">Mark Delivered ✅</button>`;
+                    }
+
+                    // Map WhatsApp Message Data
+                    const waText = encodeURIComponent(
+                        `*KAVYA RESTAURANT - NEW DELIVERY* 🛵\n\n` +
+                        `*Order ID:* ${order.orderId}\n` +
+                        `*Customer:* ${order.customer}\n` +
+                        `*Phone:* ${order.phone}\n\n` +
+                        `*Bill Amount:* ₹${order.totalAmount} (${order.paymentMethod})\n` +
+                        `*Payment Status:* ${isPaid ? 'PAID ✅' : 'PENDING ❌ (Collect Cash/UPI)'}\n\n` +
+                        `*Delivery Address:*\n${order.address}\n\n` +
+                        `*GPS Map Link:*\n${order.gpsLink}`
+                    );
+
+                    container.innerHTML += `
+                        <div class="admin-card">
+                            <div class="card-header">
+                                <div class="order-id"><i class="fa-solid fa-receipt"></i> ${order.orderId}</div>
+                                <div class="time-badge">${order.status}</div>
+                            </div>
+                            
+                            <div class="customer-info">
+                                <div class="c-name">${order.customer}</div>
+                                <div class="c-phone"><i class="fa-solid fa-phone"></i> ${order.phone}</div>
+                                <div class="c-address"><i class="fa-solid fa-location-dot"></i> ${order.address}</div>
+                                ${order.gpsLink !== 'Not Provided' ? `<a href="${order.gpsLink}" target="_blank" class="c-gps"><i class="fa-solid fa-map"></i> Open Google Maps</a>` : ''}
+                            </div>
+                            
+                            <div class="item-list">${itemsHtml}</div>
+                            
+                            <div class="finance-row">
+                                <div class="total-amt">₹${order.totalAmount}</div>
+                                <div class="pay-method ${order.paymentMethod === 'UPI' ? 'pay-upi' : 'pay-cod'}">
+                                    ${order.paymentMethod} - ${isPaid ? 'PAID ✅' : 'PENDING ⏳'}
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-whatsapp" onclick="window.open('https://wa.me/?text=${waText}')"><i class="fa-brands fa-whatsapp"></i> Send to Rider via WhatsApp</button>
+                                ${payBtnHtml}
+                                ${statusBtnHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('order-badge').innerText = activeCount;
+                if(activeCount === 0) container.innerHTML = `<p style="text-align: center; color: #888; margin-top: 50px;"><i class="fa-solid fa-mug-hot" style="font-size:40px; margin-bottom:15px; color:#333;"></i><br>Kitchen is clear. Waiting for orders...</p>`;
+            });
+        }
+
+        // ==========================================
+        // 🍽️ 2. DINING RESERVATIONS FETCH
+        // ==========================================
+        function startDiningListener() {
+            const q = query(collection(db, "reservations"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('dining-container');
+                container.innerHTML = '';
+                let count = 0;
+
+                snapshot.forEach((docSnap) => {
+                    const req = docSnap.data();
+                    const docId = docSnap.id;
+                    if(req.status === 'Confirmed' || req.status === 'Cancelled') return; // Hide processed
+                    count++;
+
+                    container.innerHTML += `
+                        <div class="admin-card">
+                            <div class="card-header">
+                                <div class="order-id"><i class="fa-solid fa-chair"></i> ${req.reservationId}</div>
+                                <div class="time-badge">${req.status}</div>
+                            </div>
+                            <div class="customer-info">
+                                <div class="c-name">${req.customer}</div>
+                                <div class="c-phone"><i class="fa-solid fa-phone"></i> ${req.phone}</div>
+                            </div>
+                            <div style="font-size:18px; color:var(--z-gold); font-weight:900; margin-bottom:15px; text-align:center; background:#0a0a0a; padding:10px; border-radius:10px; border:1px solid #333;">
+                                ${req.guests} Guests at ${req.time}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-paid" onclick="updateDining('${docId}', 'Confirmed')">Confirm Table</button>
+                                <button class="btn btn-outline" onclick="updateDining('${docId}', 'Cancelled')">Deny</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                if(count === 0) container.innerHTML = `<p style="text-align: center; color: #888; margin-top: 50px;">No pending table requests.</p>`;
+            });
+        }
+
+        // ==========================================
+        // 🔄 3. FIREBASE UPDATE ACTIONS
+        // ==========================================
+        window.markPaid = async function(docId) {
+            try {
+                await updateDoc(doc(db, "orders", docId), { paymentStatus: 'Paid' });
+            } catch(e) { alert("Error verifying payment."); }
+        };
+
+        window.updateStatus = async function(docId, newStatus) {
+            try {
+                await updateDoc(doc(db, "orders", docId), { status: newStatus });
+                stopAlarm(); // Stop alarm if order is moved forward
+            } catch(e) { alert("Error updating status."); }
+        };
+
+        window.updateDining = async function(docId, newStatus) {
+            try {
+                await updateDoc(doc(db, "reservations", docId), { status: newStatus });
+            } catch(e) { alert("Error updating table status."); }
+        };
+
+    </script>
+</body>
+</html>
