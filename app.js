@@ -1,5 +1,6 @@
 /* ==========================================================
    APP.JS - Enterprise State Management, Cart & Firebase Engine
+   (With QR Table Scanner / Dine-in Mode)
    ========================================================== */
 
 // 🛡️ FAILSAFE UI OBJECT (Crash Guard)
@@ -24,6 +25,85 @@ window.onerror = function(msg, url, line) {
     if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("System syncing... Please wait.", "error");
     return true; 
 };
+
+// 🪑 QR TABLE SCANNER ENGINE
+// Reads ?table=5 from the URL (e.g. https://yoursite.com/?table=5).
+// The table number is also kept in sessionStorage, so a page refresh or
+// navigation inside the app does not lose it. Scanning another table's
+// QR code simply overrides it. No ?table= and nothing stored = normal Delivery app.
+const TableMode = (function () {
+    const STORE_KEY = 'kavya_table_number';
+
+    // Only allow short, safe values (digits/letters/dash), e.g. "5", "12", "A3"
+    function sanitize(value) {
+        if (value === null || value === undefined) return null;
+        const v = String(value).trim();
+        return /^[A-Za-z0-9-]{1,8}$/.test(v) ? v : null;
+    }
+
+    let number = null;
+
+    try {
+        const fromUrl = sanitize(new URLSearchParams(window.location.search).get('table'));
+        if (fromUrl) {
+            number = fromUrl;
+            try { sessionStorage.setItem(STORE_KEY, fromUrl); } catch (e) {}
+        } else {
+            number = sanitize(sessionStorage.getItem(STORE_KEY));
+        }
+    } catch (e) {
+        console.error("Table QR parse error:", e);
+    }
+
+    return {
+        number: number,          // string, e.g. "5"
+        active: !!number,
+        // Value saved to the database: a real Number for "5", text for labels like "A3"
+        dbValue: function () {
+            if (!this.active) return null;
+            return /^\d+$/.test(this.number) ? parseInt(this.number, 10) : this.number;
+        },
+        clear: function () {
+            try { sessionStorage.removeItem(STORE_KEY); } catch (e) {}
+            this.number = null;
+            this.active = false;
+        }
+    };
+})();
+window.TableMode = TableMode;
+
+// Hides delivery/map sections and shows a "Table X" chip when in table mode
+function applyTableMode() {
+    if (!TableMode.active) return;
+
+    document.body.classList.add('table-mode');
+
+    // Hide any delivery address / map / location blocks that exist in your HTML.
+    // Add `class="delivery-only"` (or data-delivery-only) to any other section you want hidden.
+    if (!document.getElementById('table-mode-style')) {
+        const style = document.createElement('style');
+        style.id = 'table-mode-style';
+        style.textContent = `
+            body.table-mode .delivery-only,
+            body.table-mode [data-delivery-only],
+            body.table-mode #delivery-address-section,
+            body.table-mode #address-section,
+            body.table-mode #map-section,
+            body.table-mode #location-section,
+            body.table-mode #gps-status-badge { display: none !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Small floating chip so the customer always sees which table they are at
+    if (!document.getElementById('table-mode-chip')) {
+        const chip = document.createElement('div');
+        chip.id = 'table-mode-chip';
+        chip.style.cssText = 'position:fixed; top:10px; left:50%; transform:translateX(-50%); background:#d4af37; color:#000; padding:6px 16px; border-radius:50px; font-weight:900; font-size:12px; z-index:998; box-shadow:0 4px 14px rgba(0,0,0,0.4); pointer-events:none;';
+        chip.innerHTML = `<i class="fa-solid fa-chair"></i> Table ${TableMode.number}`;
+        document.body.appendChild(chip);
+    }
+}
 
 // 🔥 FIREBASE ENTERPRISE ENGINE
 let db = null;
@@ -151,7 +231,9 @@ class CartEngine {
         
         // 5% GST and Delivery Logic
         let gst = Math.floor(subtotal * 0.05);
-        let delivery = subtotal >= 199 ? 0 : 30;
+
+        // 🪑 QR TABLE: no delivery fee when dining in at a table
+        let delivery = TableMode.active ? 0 : (subtotal >= 199 ? 0 : 30);
         
         return { 
             subtotal, 
@@ -180,6 +262,9 @@ let currentCategory = 'All';
 let tableGuests = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 🪑 QR TABLE: apply table mode first so the UI is correct from the start
+    try { applyTableMode(); } catch(e) { console.error("Table Mode Error:", e); }
+
     // Basic Inits
     try { setupTopHeader(); } catch(e){}
     try { if(typeof categories !== 'undefined') renderCategories(); } catch(e){}
@@ -223,12 +308,17 @@ window.showActiveOrderBanner = function() {
         banner.onclick = () => launchLiveTracking(order.id);
         document.body.appendChild(banner);
     }
+
+    // 🪑 QR TABLE: show table number on the banner for dine-in orders
+    const isDineIn = order.tableNumber !== null && order.tableNumber !== undefined;
+    const tableTxt = isDineIn ? ` • Table ${order.tableNumber}` : '';
+
     banner.innerHTML = `
         <div style="display:flex; align-items:center; gap:10px;">
             <div style="background:#fff; color:#0072ff; width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center;">
-                <i class="fa-solid fa-motorcycle"></i>
+                <i class="fa-solid ${isDineIn ? 'fa-utensils' : 'fa-motorcycle'}"></i>
             </div> 
-            <span>Track Order ${order.id}</span>
+            <span>Track Order ${order.id}${tableTxt}</span>
         </div> 
         <i class="fa-solid fa-chevron-right"></i>`;
 };
@@ -524,21 +614,37 @@ window.renderCartSheet = function() {
 
     const totals = Cart.getTotals();
 
-    c.innerHTML += `
-        <div style="background:#111; padding:18px; border-radius:16px; margin-bottom:20px; border:1px solid #222;">
-            <label style="color:#888; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-                Delivery Address 
-                <span style="color:var(--z-neon); cursor:pointer; font-weight:700;" onclick="requestHighAccuracyGPS()">
-                    <i class="fa-solid fa-location-crosshairs"></i> Get GPS
-                </span>
-            </label>
-            <textarea id="cart-address" class="z-input mt-10" rows="2" placeholder="Enter complete address...">${Cart.address}</textarea>
-            <div id="gps-status-badge" style="font-size:11px; color:var(--z-green); margin-top:5px; font-weight:700; display:${Cart.gpsLink ? 'block' : 'none'};">
-                <i class="fa-solid fa-satellite-dish"></i> GPS Coordinates Locked
+    if (TableMode.active) {
+        // 🪑 QR TABLE: replace Delivery Address + GPS block with a Table card
+        c.innerHTML += `
+            <div style="background:rgba(212,175,55,0.08); padding:18px; border-radius:16px; margin-bottom:20px; border:1px dashed var(--z-gold); display:flex; align-items:center; gap:14px;">
+                <div style="background:var(--z-gold); color:#000; width:44px; height:44px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:18px;">
+                    <i class="fa-solid fa-chair"></i>
+                </div>
+                <div>
+                    <div style="color:#fff; font-weight:900; font-size:16px;">Dining at Table ${TableMode.number}</div>
+                    <div style="color:#888; font-size:12px; margin-top:2px;">Your food will be served at your table.</div>
+                </div>
             </div>
-        </div>
-        <h4 style="color:#fff; margin-bottom:15px; font-weight:800;">Your Food</h4>
-    `;
+            <h4 style="color:#fff; margin-bottom:15px; font-weight:800;">Your Food</h4>
+        `;
+    } else {
+        c.innerHTML += `
+            <div style="background:#111; padding:18px; border-radius:16px; margin-bottom:20px; border:1px solid #222;">
+                <label style="color:#888; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    Delivery Address 
+                    <span style="color:var(--z-neon); cursor:pointer; font-weight:700;" onclick="requestHighAccuracyGPS()">
+                        <i class="fa-solid fa-location-crosshairs"></i> Get GPS
+                    </span>
+                </label>
+                <textarea id="cart-address" class="z-input mt-10" rows="2" placeholder="Enter complete address...">${Cart.address}</textarea>
+                <div id="gps-status-badge" style="font-size:11px; color:var(--z-green); margin-top:5px; font-weight:700; display:${Cart.gpsLink ? 'block' : 'none'};">
+                    <i class="fa-solid fa-satellite-dish"></i> GPS Coordinates Locked
+                </div>
+            </div>
+            <h4 style="color:#fff; margin-bottom:15px; font-weight:800;">Your Food</h4>
+        `;
+    }
 
     Cart.items.forEach(i => {
         let metaTxt = i.variant;
@@ -559,20 +665,30 @@ window.renderCartSheet = function() {
         </div>`;
     });
 
-    c.innerHTML += `
-        <div style="background:#111; padding:20px; border-radius:16px; margin-top:25px; border:1px solid #222;">
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;">
-                <span>Item Total</span><span>₹${totals.subtotal}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;">
-                <span>Govt. Taxes (GST)</span><span>₹${totals.gst}</span>
-            </div>
+    // 🪑 QR TABLE: no delivery fee row for dine-in orders
+    const deliveryRow = TableMode.active ? '' : `
             <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:18px;">
                 <span>Delivery Fee</span>
                 <span style="color:${totals.delivery === 0 ? 'var(--z-green)' : '#ccc'}; font-weight:700;">
                     ${totals.delivery === 0 ? 'FREE' : '₹'+totals.delivery}
                 </span>
+            </div>`;
+
+    // 🪑 QR TABLE: button labels. Payment methods ('COD' / 'UPI') are unchanged for your admin panel.
+    const cashBtnLabel = TableMode.active ? 'Cash at Table' : 'Cash (COD)';
+    const mainBtnLabel = TableMode.active
+        ? `Order for Table: ${TableMode.number}<div style="font-size:11px; font-weight:700; opacity:0.9; margin-top:2px;">Pay via UPI <i class="fa-solid fa-bolt"></i></div>`
+        : `Pay via UPI <i class="fa-solid fa-bolt" style="margin-left:5px;"></i>`;
+
+    c.innerHTML += `
+        <div style="background:#111; padding:20px; border-radius:16px; margin-top:25px; border:1px solid #222;">
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:12px;">
+                <span>Item Total</span><span>₹${totals.subtotal}</span>
             </div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#ccc; margin-bottom:${TableMode.active ? '18px' : '12px'};">
+                <span>Govt. Taxes (GST)</span><span>₹${totals.gst}</span>
+            </div>
+            ${deliveryRow}
             
             <div style="background: rgba(212,175,55,0.08); border: 1px dashed var(--z-gold); padding: 14px; border-radius: 12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -589,8 +705,8 @@ window.renderCartSheet = function() {
         </div>
         
         <div style="display:flex; gap:12px; margin-top:30px;">
-            <button style="flex:1; background:#222; color:#fff; border:1px solid #444; padding:16px; border-radius:14px; font-weight:800;" onclick="placeOrder('COD')">Cash (COD)</button>
-            <button style="flex:1.5; background:var(--z-red); color:#fff; border:none; padding:16px; border-radius:14px; font-weight:900; box-shadow:0 6px 15px rgba(226,55,68,0.4);" onclick="placeOrder('UPI')">Pay via UPI <i class="fa-solid fa-bolt" style="margin-left:5px;"></i></button>
+            <button style="flex:1; background:#222; color:#fff; border:1px solid #444; padding:16px; border-radius:14px; font-weight:800;" onclick="placeOrder('COD')">${cashBtnLabel}</button>
+            <button style="flex:1.5; background:var(--z-red); color:#fff; border:none; padding:16px; border-radius:14px; font-weight:900; box-shadow:0 6px 15px rgba(226,55,68,0.4);" onclick="placeOrder('UPI')">${mainBtnLabel}</button>
         </div>`;
 };
 
@@ -667,17 +783,24 @@ window.requestHighAccuracyGPS = function() {
 
 // 🚀 FIREBASE ORDER PUSH, LIVE TRACKING & DIRECT UPI TRIGGER
 window.placeOrder = async function(method) {
-    const add = document.getElementById('cart-address').value;
+    // 🪑 QR TABLE: dine-in orders don't need a delivery address
+    const addEl = document.getElementById('cart-address');
+    const add = TableMode.active
+        ? `Dine-in: Table ${TableMode.number}`
+        : (addEl ? addEl.value : '');
     
-    if (add.trim() === "") {
+    if (!TableMode.active && add.trim() === "") {
         if(typeof UI !== 'undefined' && UI.showToast) {
             UI.showToast("Delivery Address is mandatory!", "error");
         }
         return;
     }
     
-    Cart.address = add;
-    localStorage.setItem('kavya_address', add);
+    // Only save a delivery address for real delivery orders
+    if (!TableMode.active) {
+        Cart.address = add;
+        localStorage.setItem('kavya_address', add);
+    }
     
     const totals = Cart.getTotals();
     let finalTotal = totals.totalBeforeDiscount;
@@ -691,30 +814,39 @@ window.placeOrder = async function(method) {
     
     const orderId = 'ORD' + Math.floor(Math.random() * 900000 + 100000);
 
-    // ⚡ DIRECT UPI DEEP LINKING
-    if (method === 'UPI') {
-        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Opening Payment App...");
-        const upiId = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.upi_id) ? APP_CONFIG.upi_id : 'merchant@upi';
-        const merchantName = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.restaurant_name) ? APP_CONFIG.restaurant_name : 'Kavya Restaurant';
-        const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${finalTotal}&cu=INR&tn=Order_${orderId}`;
-        window.location.href = upiLink;
-    }
+    // 🪑 QR TABLE: these two fields are what the Admin Panel reads
+    //   Table QR scanned  -> orderType: 'Dine-in',  tableNumber: 5 (number)
+    //   No table in URL   -> orderType: 'Delivery', tableNumber: null
+    const orderType = TableMode.active ? 'Dine-in' : 'Delivery';
+    const tableNumber = TableMode.dbValue();
+
+    // Snapshot of the cart items (the cart is cleared below, after the save)
+    const orderItems = JSON.parse(JSON.stringify(Cart.items));
 
     // 🔥 SAVE ACTIVE ORDER TO LOCALSTORAGE FOR PERSISTENT BANNER
-    localStorage.setItem('kavya_active_order', JSON.stringify({id: orderId, amount: finalTotal, method: method}));
+    localStorage.setItem('kavya_active_order', JSON.stringify({
+        id: orderId, 
+        amount: finalTotal, 
+        method: method,
+        orderType: orderType,
+        tableNumber: tableNumber
+    }));
 
-    // 🔥 Send to Firebase Database
+    // 🔥 Send to Firebase Database FIRST (before the UPI app opens),
+    // so the Admin Panel always receives the order, even if the page gets unloaded.
     if (window.db && window.fbAddDoc) {
         try {
             await window.fbAddDoc(window.fbCollection(window.db, "orders"), {
                 orderId: orderId,
                 customer: Auth.user, 
                 phone: Auth.phone,
-                items: Cart.items, 
+                items: orderItems, 
                 totalAmount: finalTotal, 
                 paymentMethod: method,
-                address: Cart.address, 
-                gpsLink: Cart.gpsLink || 'Not Provided',
+                orderType: orderType,                 // 🪑 'Dine-in' or 'Delivery'
+                tableNumber: tableNumber,             // 🪑 e.g. 5 (null for delivery)
+                address: add, 
+                gpsLink: TableMode.active ? 'Not Applicable (Dine-in)' : (Cart.gpsLink || 'Not Provided'),
                 coinsRedeemed: coinsUsed,
                 status: 'Preparing', 
                 timestamp: window.fbServerTimestamp()
@@ -734,6 +866,15 @@ window.placeOrder = async function(method) {
     
     showActiveOrderBanner();
     launchLiveTracking(orderId);
+
+    // ⚡ DIRECT UPI DEEP LINKING (runs last, after the order is safely saved)
+    if (method === 'UPI') {
+        if(typeof UI !== 'undefined' && UI.showToast) UI.showToast("Opening Payment App...");
+        const upiId = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.upi_id) ? APP_CONFIG.upi_id : 'merchant@upi';
+        const merchantName = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.restaurant_name) ? APP_CONFIG.restaurant_name : 'Kavya Restaurant';
+        const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${finalTotal}&cu=INR&tn=Order_${orderId}`;
+        setTimeout(() => { window.location.href = upiLink; }, 400);
+    }
 };
 
 // ⏱️ REAL-TIME LIVE ORDER TRACKING SCREEN (SYNCED WITH FIREBASE)
@@ -776,10 +917,14 @@ window.launchLiveTracking = function(orderId) {
                     if(banner) banner.remove();
                 }
 
+                // 🪑 QR TABLE: show table number in the header for dine-in orders
+                const hasTable = order.tableNumber !== null && order.tableNumber !== undefined;
+                const tableHeaderTxt = hasTable ? ` • Table ${order.tableNumber}` : '';
+
                 trackScreen.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                         <i class="fa-solid fa-arrow-left" style="color:#fff; font-size:24px; cursor:pointer;" onclick="document.getElementById('live-tracking-screen').style.display='none'"></i>
-                        <span style="color:var(--z-gold); font-weight:800;">Order ${order.orderId}</span>
+                        <span style="color:var(--z-gold); font-weight:800;">Order ${order.orderId}${tableHeaderTxt}</span>
                         <i class="fa-solid fa-headset" style="color:#fff; font-size:20px;"></i>
                     </div>
                     
@@ -977,4 +1122,4 @@ function renderAuthPage() {
             <button class="z-gold-btn mt-15" onclick="Auth.login(document.getElementById('user-name').value, document.getElementById('user-phone').value)">Authenticate & Enter</button>
         `;
     }
-}
+           }
